@@ -1,2 +1,4 @@
 .DS_Store
 mpc
+*.sublime-project
+*.sublime-workspace
