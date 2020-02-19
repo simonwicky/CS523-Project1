@@ -2,3 +2,4 @@
 mpc
 *.sublime-project
 *.sublime-workspace
+tmp/
