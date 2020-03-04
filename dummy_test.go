@@ -7,7 +7,7 @@ import (
 )
 
 func TestDummyProtocol(t *testing.T) {
-	peers := map[PartyID]string {
+	peers := map[PartyID]string{
 		0: "localhost:6660",
 		1: "localhost:6661",
 		2: "localhost:6662",
@@ -24,7 +24,7 @@ func TestDummyProtocol(t *testing.T) {
 		P[i].WaitGroup = wg
 		check(err)
 
-		dummyProtocol[i] = P[i].NewDummyProtocol(uint64(i+10))
+		dummyProtocol[i] = P[i].NewDummyProtocol(uint64(i + 10))
 	}
 
 	network := GetTestingTCPNetwork(P)
@@ -41,8 +41,46 @@ func TestDummyProtocol(t *testing.T) {
 	wg.Wait()
 
 	for _, p := range dummyProtocol {
-		fmt.Println(p, "completed with output", p.Output)
+		fmt.Println(p, "completed with output", p.Secret)
 	}
 
 	fmt.Println("test completed")
+}
+
+func TestDummyProtocol2(t *testing.T) {
+	peers := map[PartyID]string{
+		0: "localhost:6660",
+		1: "localhost:6661",
+		2: "localhost:6662",
+	}
+
+	N := uint64(len(peers))
+	dummyProtocol := make([]*DummyProtocol, N, N)
+
+	P := make([]*LocalParty, N, N)
+
+	var err error
+	for i := range peers {
+		P[i], err = NewLocalParty(i, peers)
+		check(err)
+
+		dummyProtocol[i] = P[i].NewDummyProtocol(uint64(i + 10))
+	}
+
+	//dummyProtocol[0].Run()
+}
+
+func TestEval(t *testing.T) {
+	t.Run("circuit1", func(t *testing.T) {
+		//test circuit1
+	})
+	t.Run("circuit2", func(t *testing.T) {
+		//test circuit2
+	})
+	t.Run("circuit3", func(t *testing.T) {
+		//test circuit3
+	})
+	t.Run("circuit4", func(t *testing.T) {
+		//test circuit4
+	})
 }
