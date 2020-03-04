@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"time"
 )
 
 const (
@@ -92,6 +93,7 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 
 func (cep *DummyProtocol) Run() {
 	fmt.Println(cep, "is running")
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	//create secret shares and send them
 	cep.Input_share = cep.Input
@@ -116,9 +118,11 @@ func (cep *DummyProtocol) Run() {
 	}
 	//shares are ready, let's compute the circuit
 
-	//call circuit.go and get result
+	//cep.Output = ComputeCircuit(,cep.Secret)
 
 	if cep.WaitGroup != nil {
 		cep.WaitGroup.Done()
+		fmt.Println(cep, " done ")
+
 	}
 }
