@@ -24,6 +24,7 @@ type DummyProtocol struct {
 
 	Circuit []Operation
 
+	Triplets    [][3]uint64
 	Input       uint64
 	Input_share uint64
 	Secret      []uint64
@@ -99,14 +100,13 @@ func (cep *DummyProtocol) Run() {
 
 	//create secret shares and send them
 	cep.Input_share = cep.Input
+	shares := secret_share(cep.Input, len(cep.Peers))
 	for _, peer := range cep.Peers {
 		if peer.ID != cep.ID {
-			share := rand.Intn(MODULUS)
-			cep.Input_share = uint64(Pmod(int(cep.Input_share)-share, MODULUS))
-			peer.Chan <- DummyMessage{cep.ID, uint64(share)}
+			peer.Chan <- DummyMessage{cep.ID, uint64(shares[peer.ID])}
 		}
 	}
-	cep.Secret[cep.ID] = cep.Input_share
+	cep.Secret[cep.ID] = shares[cep.ID]
 
 	//collect shares from other peers
 	received := 0
@@ -115,12 +115,13 @@ func (cep *DummyProtocol) Run() {
 		cep.Secret[m.Party] = m.Value
 		received++
 		if received == len(cep.Peers)-1 {
-			close(cep.Chan)
+			//close(cep.Chan)
+			break
 		}
 	}
 	//shares are ready, let's compute the circuit
 
-	cep.Output = cep.ComputeCircuit()
+	//cep.Output = cep.ComputeCircuit()
 
 	if cep.WaitGroup != nil {
 		cep.WaitGroup.Done()

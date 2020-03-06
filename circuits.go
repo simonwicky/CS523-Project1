@@ -22,6 +22,17 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 		dummyProtocol[i].Circuit = circuit.Circuit
 	}
 
+	//generateBeaverTriplet
+	nb_mult := 0
+	for _, op := range circuit.Circuit {
+		switch op.(type) {
+		case *Mult:
+			nb_mult += 1
+		}
+	}
+
+	generateBeaverTriplet(nb_mult, dummyProtocol)
+
 	network := GetTestingTCPNetwork(P)
 	fmt.Println("parties connected")
 
