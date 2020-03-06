@@ -19,6 +19,7 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 		check(err)
 
 		dummyProtocol[i] = P[i].NewDummyProtocol(circuit.Inputs[i][GateID(i)])
+		dummyProtocol[i].Circuit = circuit.Circuit
 	}
 
 	network := GetTestingTCPNetwork(P)
@@ -30,8 +31,8 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 	return
 }
 
-func CheckResult(circuit *TestCircuit, result uint64) bool {
-	return false
+func (cep *DummyProtocol) CheckResult(circuit *TestCircuit) bool {
+	return cep.Output == circuit.ExpOutput
 }
 
 func ComputeCircuit(circuit *TestCircuit, inputs []uint64) uint64 {

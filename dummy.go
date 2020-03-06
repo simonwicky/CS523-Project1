@@ -22,6 +22,8 @@ type DummyProtocol struct {
 	Chan  chan DummyMessage
 	Peers map[PartyID]*DummyRemote
 
+	Circuit []Operation
+
 	Input       uint64
 	Input_share uint64
 	Secret      []uint64
@@ -118,11 +120,10 @@ func (cep *DummyProtocol) Run() {
 	}
 	//shares are ready, let's compute the circuit
 
-	//cep.Output = ComputeCircuit(,cep.Secret)
+	cep.Output = cep.ComputeCircuit()
 
 	if cep.WaitGroup != nil {
 		cep.WaitGroup.Done()
-		fmt.Println(cep, " done ")
 
 	}
 }
