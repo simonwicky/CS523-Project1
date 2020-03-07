@@ -72,20 +72,23 @@ func TestDummyProtocol2(t *testing.T) {
 
 func TestEval(t *testing.T) {
 	t.Run("circuit1", func(t *testing.T) {
+		circuit := TestCircuits[0]
 
-		dummyProtocol, wg := SetUpMPC(TestCircuits[0])
+		dp, wg := SetUpMPC(circuit)
 
 		//waitGroup and Run
-		for _, p := range dummyProtocol {
-			p.Add(1)
-			go p.Run()
+		for _, cep := range dp {
+			cep.Add(1)
+			go cep.Run()
 		}
 		wg.Wait()
 
-		for _, p := range dummyProtocol {
-			fmt.Println(p, "completed with output", p.Secret)
+		for _, cep := range dp {
+			if cep.Output != circuit.ExpOutput {
+				t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+			}
 		}
-
+		fmt.Printf("circuit 1 tested successfull with output %v", circuit.ExpOutput)
 	})
 	t.Run("circuit2", func(t *testing.T) {
 		//test circuit2
