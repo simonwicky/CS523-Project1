@@ -101,7 +101,7 @@ func (cep *DummyProtocol) ComputeCircuit() (out uint64, err error) {
 			if t >= len(triplets) {
 				return 0, errors.New("not enough triplets were provided")
 			}
-			result[i] = Mult_Gate(in1, in2, cep.ID, triplets[t], cep)
+			result[i] = Mult_Gate(in1, in2, uint64(i), triplets[t], cep)
 			t += 1
 		case *MultCst:
 			multCst := op.(*MultCst)
@@ -109,12 +109,11 @@ func (cep *DummyProtocol) ComputeCircuit() (out uint64, err error) {
 			result[i] = MultCst_Gate(in, cst)
 		case *Reveal:
 			result[i] = result[i-1]
-			out = Reveal_Gate(cep, result[i])
+			out = Reveal_Gate(cep, result[i], uint64(i))
 			revealed = true
 		default:
 			return 0, errors.New("gate type is not recognized")
 		}
 	}
-
 	return
 }

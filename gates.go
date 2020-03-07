@@ -19,15 +19,15 @@ func MultCst_Gate(a, cst uint64) uint64 {
 	return uint64(Pmod(int64(a*cst), MODULUS))
 }
 
-func Mult_Gate(x, y uint64, id PartyID, triplet [3]uint64, cep *DummyProtocol) uint64 {
+func Mult_Gate(x, y uint64, gateID uint64, triplet [3]uint64, cep *DummyProtocol) uint64 {
 	a := triplet[0]
 	b := triplet[1]
 	c := triplet[2]
 
 	x_a := Sub_Gate(x, a)
 	y_b := Sub_Gate(y, b)
-	x_a = Reveal_Gate(cep, x_a)
-	y_b = Reveal_Gate(cep, y_b)
+	x_a = reveal_gate(cep, x_a, [2]uint64{gateID, 0})
+	y_b = reveal_gate(cep, y_b, [2]uint64{gateID, 1})
 
 	//[z] = [c] + [x] * (y − b) + [y] * (x − a) − (x − a)(y − b)
 
@@ -44,29 +44,36 @@ func Mult_Gate(x, y uint64, id PartyID, triplet [3]uint64, cep *DummyProtocol) u
 	half1 := Add_Gate(c, term1)
 
 	// [y] * (x − a) − (x − a)(y − b)
-	half2 := AddCst_Gate(id, term2, term3)
+	half2 := AddCst_Gate(cep.ID, term2, term3)
 
 	//[z]
 	return Add_Gate(half1, half2)
 }
 
-func Reveal_Gate(cep *DummyProtocol, value uint64) (output uint64) {
-	//might need to reopen the receiving channel
+func reveal_gate(cep *DummyProtocol, value uint64, id [2]uint64) (output uint64) {
 	output = value
 	for _, peer := range cep.Peers {
 		if peer.ID != cep.ID {
-			peer.Chan <- DummyMessage{cep.ID, value}
+			peer.Chan <- DummyMessage{cep.ID, value, id[0], id[1]}
 		}
 	}
 
 	received := 0
 	for m := range cep.Chan {
-		output = (output + m.Value) % MODULUS
-		received++
-		if received == len(cep.Peers)-1 {
-			//close(cep.Chan)
-			break
+		if m.Id0 == id[0] && m.Id1 == id[1] {
+			output = (output + m.Value) % MODULUS
+			received++
+			if received == len(cep.Peers)-1 {
+				//close(cep.Chan)
+				break
+			}
+		} else {
+			cep.Chan <- m
 		}
 	}
 	return
+}
+
+func Reveal_Gate(cep *DummyProtocol, value uint64, gateID uint64) uint64 {
+	return reveal_gate(cep, value, [2]uint64{gateID, 0})
 }
