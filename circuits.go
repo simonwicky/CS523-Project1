@@ -44,10 +44,6 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 	return
 }
 
-func (cep *DummyProtocol) CheckResult(circuit *TestCircuit) bool {
-	return cep.Output == circuit.ExpOutput
-}
-
 func (cep *DummyProtocol) ComputeCircuit() (out uint64, err error) {
 	secret := cep.Secret
 	circuit := cep.Circuit
@@ -85,19 +81,19 @@ func (cep *DummyProtocol) ComputeCircuit() (out uint64, err error) {
 			return 0, errors.New("number of secrets does not match number of circuit inputs")
 		case *Add:
 			add := op.(*Add)
-			in1, in2 := result[int(add.In1)], result[int(add.In2)]
+			in1, in2 := result[uint64(add.In1)], result[uint64(add.In2)]
 			result[i] = Add_Gate(in1, in2)
 		case *AddCst:
 			addCst := op.(*AddCst)
-			in, cst := result[int(addCst.In)], addCst.CstValue
+			in, cst := result[uint64(addCst.In)], addCst.CstValue
 			result[i] = AddCst_Gate(cep.ID, in, cst)
 		case *Sub:
 			sub := op.(*Sub)
-			in1, in2 := result[int(sub.In1)], result[int(sub.In2)]
+			in1, in2 := result[uint64(sub.In1)], result[uint64(sub.In2)]
 			result[i] = Sub_Gate(in1, in2)
 		case *Mult:
 			mult := op.(*Mult)
-			in1, in2 := result[int(mult.In1)], result[int(mult.In2)]
+			in1, in2 := result[uint64(mult.In1)], result[uint64(mult.In2)]
 			if t >= len(triplets) {
 				return 0, errors.New("not enough triplets were provided")
 			}
@@ -105,7 +101,7 @@ func (cep *DummyProtocol) ComputeCircuit() (out uint64, err error) {
 			t += 1
 		case *MultCst:
 			multCst := op.(*MultCst)
-			in, cst := result[int(multCst.In)], multCst.CstValue
+			in, cst := result[uint64(multCst.In)], multCst.CstValue
 			result[i] = MultCst_Gate(in, cst)
 		case *Reveal:
 			result[i] = result[i-1]
