@@ -91,12 +91,136 @@ func TestEval(t *testing.T) {
 		fmt.Printf("circuit 1 tested successfull with output %v", circuit.ExpOutput)
 	})
 	t.Run("circuit2", func(t *testing.T) {
-		//test circuit2
+		circuit := TestCircuits[1]
+
+		dp, wg := SetUpMPC(circuit)
+
+		//waitGroup and Run
+		for _, cep := range dp {
+			cep.Add(1)
+			go cep.Run()
+		}
+		wg.Wait()
+
+		for _, cep := range dp {
+			if cep.Output != circuit.ExpOutput {
+				t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+			}
+		}
+		fmt.Printf("circuit 2 tested successfull with output %v", circuit.ExpOutput)
 	})
 	t.Run("circuit3", func(t *testing.T) {
-		//test circuit3
+		circuit := TestCircuits[2]
+
+		dp, wg := SetUpMPC(circuit)
+
+		//waitGroup and Run
+		for _, cep := range dp {
+			cep.Add(1)
+			go cep.Run()
+		}
+		wg.Wait()
+
+		for _, cep := range dp {
+			if cep.Output != circuit.ExpOutput {
+				t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+			}
+		}
+		fmt.Printf("circuit 3 tested successfull with output %v", circuit.ExpOutput)
 	})
 	t.Run("circuit4", func(t *testing.T) {
-		//test circuit4
+		circuit := TestCircuits[3]
+
+		dp, wg := SetUpMPC(circuit)
+
+		//waitGroup and Run
+		for _, cep := range dp {
+			cep.Add(1)
+			go cep.Run()
+		}
+		wg.Wait()
+
+		for _, cep := range dp {
+			if cep.Output != circuit.ExpOutput {
+				t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+			}
+		}
+		fmt.Printf("circuit 4 tested successfull with output %v", circuit.ExpOutput)
+	})
+	t.Run("circuit5", func(t *testing.T) {
+		circuit := TestCircuits[4]
+
+		dp, wg := SetUpMPC(circuit)
+
+		//waitGroup and Run
+		for _, cep := range dp {
+			cep.Add(1)
+			go cep.Run()
+		}
+		wg.Wait()
+
+		for _, cep := range dp {
+			if cep.Output != circuit.ExpOutput {
+				t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+			}
+		}
+		fmt.Printf("circuit 5 tested successfull with output %v", circuit.ExpOutput)
+	})
+	t.Run("circuit6", func(t *testing.T) {
+		circuit := TestCircuits[5]
+
+		dp, wg := SetUpMPC(circuit)
+
+		//waitGroup and Run
+		for _, cep := range dp {
+			cep.Add(1)
+			go cep.Run()
+		}
+		wg.Wait()
+
+		for _, cep := range dp {
+			if cep.Output != circuit.ExpOutput {
+				t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+			}
+		}
+		fmt.Printf("circuit 6 tested successfull with output %v", circuit.ExpOutput)
+	})
+	t.Run("circuit7", func(t *testing.T) {
+		circuit := TestCircuits[6]
+
+		dp, wg := SetUpMPC(circuit)
+
+		//waitGroup and Run
+		for _, cep := range dp {
+			cep.Add(1)
+			go cep.Run()
+		}
+		wg.Wait()
+
+		for _, cep := range dp {
+			if cep.Output != circuit.ExpOutput {
+				t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+			}
+		}
+		fmt.Printf("circuit 7 tested successfull with output %v", circuit.ExpOutput)
+	})
+	t.Run("circuit8", func(t *testing.T) {
+		circuit := TestCircuits[7]
+
+		dp, wg := SetUpMPC(circuit)
+
+		//waitGroup and Run
+		for _, cep := range dp {
+			cep.Add(1)
+			go cep.Run()
+		}
+		wg.Wait()
+
+		for _, cep := range dp {
+			if cep.Output != circuit.ExpOutput {
+				t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+			}
+		}
+		fmt.Printf("circuit 8 tested successfull with output %v", circuit.ExpOutput)
 	})
 }
