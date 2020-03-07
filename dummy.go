@@ -120,11 +120,13 @@ func (cep *DummyProtocol) Run() {
 		}
 	}
 	//shares are ready, let's compute the circuit
-
-	//cep.Output = cep.ComputeCircuit()
+	err := error(nil)
+	cep.Output, err = cep.ComputeCircuit()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	if cep.WaitGroup != nil {
 		cep.WaitGroup.Done()
-
 	}
 }
