@@ -83,6 +83,7 @@ func TestEval(t *testing.T) {
 		{"circuit6", 5},
 		{"circuit7", 6},
 		{"circuit8", 7},
+		{"circuit9", 8},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
