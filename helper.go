@@ -21,3 +21,40 @@ func secret_share(secret uint64, n int) []uint64 {
 	secret_share[0] = secret
 	return secret_share
 }
+
+func newRandomVec(n, T uint64) []uint64 {
+	output := make([]uint64, n)
+	for i := range output {
+		output[i] = ring.RandUniform(T, T)
+	}
+	return output
+}
+
+func addVec(a, b []uint64, T uint64) []uint64 {
+	output := make([]uint64, len(a))
+	for i := range output {
+		output[i] = uint64(Pmod(int64(a[i])+int64(b[i]), int64(T)))
+	}
+	return output
+}
+func subVec(a, b []uint64, T uint64) []uint64 {
+	output := make([]uint64, len(a))
+	for i := range output {
+		output[i] = uint64(Pmod(int64(a[i])-int64(b[i]), int64(T)))
+	}
+	return output
+}
+func mulVec(a, b []uint64, T uint64) []uint64 {
+	output := make([]uint64, len(a))
+	for i := range output {
+		output[i] = uint64(Pmod(int64(a[i])*int64(b[i]), int64(T)))
+	}
+	return output
+}
+func negVec(a, b []uint64, T uint64) []uint64 {
+	output := make([]uint64, len(a))
+	for i := range output {
+		output[i] = uint64(Pmod(-int64(a[i]), int64(T)))
+	}
+	return output
+}
