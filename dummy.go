@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
-	"math/rand"
 	"net"
-	"time"
 )
 
 const (
@@ -106,7 +104,6 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 
 func (cep *DummyProtocol) Run() {
 	fmt.Println(cep, "is running")
-	rand.Seed(time.Now().UTC().UnixNano())
 
 	//create secret shares and send them
 	cep.Input_share = cep.Input
