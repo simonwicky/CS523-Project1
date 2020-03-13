@@ -13,17 +13,6 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 	P := make([]*LocalParty, N, N)
 	dummyProtocol = make([]*DummyProtocol, N, N)
 
-	var err error
-	wg = new(sync.WaitGroup)
-	for i := range circuit.Peers {
-		P[i], err = NewLocalParty(i, circuit.Peers)
-		P[i].WaitGroup = wg
-		check(err)
-
-		dummyProtocol[i] = P[i].NewDummyProtocol(circuit.Inputs[i][GateID(i)])
-		dummyProtocol[i].Circuit = circuit.Circuit
-	}
-
 	//generateBeaverTriplet
 	nb_mult := 0
 	for _, op := range circuit.Circuit {
@@ -33,12 +22,26 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 		}
 	}
 
-	generateBeaverTriplet(nb_mult, dummyProtocol)
+	var err error
+	wg = new(sync.WaitGroup)
+	for i := range circuit.Peers {
+		P[i], err = NewLocalParty(i, circuit.Peers)
+		P[i].WaitGroup = wg
+		check(err)
+
+		dummyProtocol[i] = P[i].NewDummyProtocol(circuit.Inputs[i][GateID(i)])
+		dummyProtocol[i].Bp = P[i].NewBeaverProtocol(nb_mult)
+		dummyProtocol[i].Circuit = circuit.Circuit
+	}
+
+	//generateBeaverTriplet(nb_mult, dummyProtocol)
 
 	network := GetTestingTCPNetwork(P)
 	fmt.Println("parties connected")
 
 	for i, Pi := range dummyProtocol {
+		//won't work
+		Pi.Bp.BindNetwork(network[i])
 		Pi.BindNetwork(network[i])
 	}
 	return

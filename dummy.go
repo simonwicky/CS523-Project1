@@ -22,6 +22,8 @@ type DummyProtocol struct {
 	Chan  chan DummyMessage
 	Peers map[PartyID]*DummyRemote
 
+	Bp *BeaverProtocol
+
 	Circuit []Operation
 
 	Triplets    [][3]uint64
@@ -104,6 +106,9 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 
 func (cep *DummyProtocol) Run() {
 	fmt.Println(cep, "is running")
+
+	//beaverPart
+	cep.Bp.Run()
 
 	//create secret shares and send them
 	cep.Input_share = cep.Input
