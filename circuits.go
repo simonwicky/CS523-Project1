@@ -40,7 +40,6 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 	fmt.Println("parties connected")
 
 	for i, Pi := range dummyProtocol {
-		//won't work
 		Pi.Bp.BindNetwork(network[i])
 		Pi.BindNetwork(network[i])
 	}

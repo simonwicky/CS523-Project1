@@ -74,41 +74,16 @@ func (bp *BeaverProtocol) BindNetwork(nw *TCPNetworkStruct) {
 
 		rp := bp.Peers[partyID]
 
-		// Receiving loop from remote
-		go func(conn net.Conn) {
-			for {
-				var id uint64
-				var err error
-				err = binary.Read(conn, binary.BigEndian, &id)
-				check(err)
-				// err = binary.Read(conn, binary.BigEndian, &val)
-				// check(err)
-				// err = binary.Read(conn, binary.BigEndian, &idmsg0)
-				// check(err)
-				// err = binary.Read(conn, binary.BigEndian, &idmsg1)
-				// check(err)
-				msg := BeaverMessage{
-					Party: PartyID(id),
-					// Value: val,
-					// Id0:   idmsg0,
-					// Id1:   idmsg1,
-				}
-				//fmt.Println(cep, "receiving", msg, "from", rp)
-				bp.Chan <- msg
-			}
-		}(conn)
-
 		// Sending loop of remote
 		go func(conn net.Conn, rp *BeaverRemoteParty) {
 			var m BeaverMessage
 			var open = true
 			for open {
 				m, open = <-rp.Chan
-				//fmt.Println(cep, "sending", m, "to", rp)
+				beaverID := uint64(0)
+				check(binary.Write(conn, binary.BigEndian, beaverID))
 				check(binary.Write(conn, binary.BigEndian, m.Party))
-				// check(binary.Write(conn, binary.BigEndian, m.Value))
-				// check(binary.Write(conn, binary.BigEndian, m.Id0))
-				// check(binary.Write(conn, binary.BigEndian, m.Id1))
+				//send the rest of the field
 			}
 		}(conn, rp)
 	}
@@ -116,14 +91,20 @@ func (bp *BeaverProtocol) BindNetwork(nw *TCPNetworkStruct) {
 
 func (bp *BeaverProtocol) Run() {
 	//here the protocol is actually run
-	fmt.Println("Protocol beaver is running")
+	fmt.Println("Protocol beaver is running for", bp.Nb_triplet, "triplets")
 
 	//beaver := cep.Bp
 	//beaver.A = newRandomVec(...)
 	//beaver.B = newRandomVec(...)
 	//beaver.C = mulVec(beaver.A, beaver.B,...)
 	for _, peer := range bp.Peers {
-		close(peer.Chan)
+		if peer.ID != bp.ID {
+			fmt.Println(bp.ID, "BeaverMessage sent to", peer.ID)
+			peer.Chan <- BeaverMessage{
+				Party: bp.ID,
+			}
+			close(peer.Chan)
+		}
 	}
 	return
 }

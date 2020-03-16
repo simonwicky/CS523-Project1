@@ -67,24 +67,40 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 		// Receiving loop from remote
 		go func(conn net.Conn, rp *DummyRemote) {
 			for {
-				var id, val, idmsg0, idmsg1 uint64
+				var msgID uint64
 				var err error
-				err = binary.Read(conn, binary.BigEndian, &id)
+				err = binary.Read(conn, binary.BigEndian, &msgID)
 				check(err)
-				err = binary.Read(conn, binary.BigEndian, &val)
-				check(err)
-				err = binary.Read(conn, binary.BigEndian, &idmsg0)
-				check(err)
-				err = binary.Read(conn, binary.BigEndian, &idmsg1)
-				check(err)
-				msg := DummyMessage{
-					Party: PartyID(id),
-					Value: val,
-					Id0:   idmsg0,
-					Id1:   idmsg1,
+				if msgID == 0 {
+					//beaverMessage
+					var id uint64
+					check(binary.Read(conn, binary.BigEndian, &id))
+					msg := BeaverMessage{
+						Party: PartyID(id),
+					}
+					cep.Bp.Chan <- msg
+				} else if msgID == 1 {
+					//dummyMessage
+					var id, val, idmsg0, idmsg1 uint64
+					err = binary.Read(conn, binary.BigEndian, &id)
+					check(err)
+					err = binary.Read(conn, binary.BigEndian, &val)
+					check(err)
+					err = binary.Read(conn, binary.BigEndian, &idmsg0)
+					check(err)
+					err = binary.Read(conn, binary.BigEndian, &idmsg1)
+					check(err)
+					msg := DummyMessage{
+						Party: PartyID(id),
+						Value: val,
+						Id0:   idmsg0,
+						Id1:   idmsg1,
+					}
+					cep.Chan <- msg
+				} else {
+					fmt.Println(cep, "Unknown message")
 				}
-				//fmt.Println(cep, "receiving", msg, "from", rp)
-				cep.Chan <- msg
+
 			}
 		}(conn, rp)
 
@@ -94,7 +110,8 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 			var open = true
 			for open {
 				m, open = <-rp.Chan
-				//fmt.Println(cep, "sending", m, "to", rp)
+				dummyID := uint64(1)
+				check(binary.Write(conn, binary.BigEndian, dummyID))
 				check(binary.Write(conn, binary.BigEndian, m.Party))
 				check(binary.Write(conn, binary.BigEndian, m.Value))
 				check(binary.Write(conn, binary.BigEndian, m.Id0))
@@ -109,6 +126,7 @@ func (cep *DummyProtocol) Run() {
 
 	//beaverPart
 	cep.Bp.Run()
+	fmt.Println("Protocol beaver has terminated")
 
 	//create secret shares and send them
 	cep.Input_share = cep.Input
@@ -119,7 +137,6 @@ func (cep *DummyProtocol) Run() {
 		}
 	}
 	cep.Secret[cep.ID] = shares[cep.ID]
-
 	//collect shares from other peers
 	received := 0
 	for m := range cep.Chan {
