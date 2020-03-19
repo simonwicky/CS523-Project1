@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+
+	"github.com/ldsec/lattigo/bfv"
 )
 
 const (
@@ -73,11 +75,20 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 				check(err)
 				if msgID == 0 {
 					//beaverMessage
-					var id uint64
+					var id, loopID uint64
 					check(binary.Read(conn, binary.BigEndian, &id))
+					var len uint64
+					check(binary.Read(conn, binary.BigEndian, &len))
+					c := make([]byte, len)
+					check(binary.Read(conn, binary.BigEndian, &c))
+					check(binary.Read(conn, binary.BigEndian, &loopID))
+					//fmt.Println(c)
 					msg := BeaverMessage{
-						Party: PartyID(id),
+						Party:  PartyID(id),
+						D:      bfv.NewCiphertext(cep.Bp.Param, 1<<cep.Bp.Param.LogN),
+						loopID: loopID,
 					}
+					msg.D.UnmarshalBinary(c)
 					cep.Bp.Chan <- msg
 				} else if msgID == 1 {
 					//dummyMessage
