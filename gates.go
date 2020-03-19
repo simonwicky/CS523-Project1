@@ -5,7 +5,7 @@ func Add_Gate(a, b uint64) uint64 {
 }
 
 func Sub_Gate(a, b uint64) uint64 {
-	return uint64(Pmod(int64(a-b), MODULUS))
+	return uint64(Pmod(int64(a-b), int64(MODULUS)))
 }
 
 func AddCst_Gate(id PartyID, a, cst uint64) uint64 {
@@ -16,7 +16,7 @@ func AddCst_Gate(id PartyID, a, cst uint64) uint64 {
 }
 
 func MultCst_Gate(a, cst uint64) uint64 {
-	return uint64(Pmod(int64(a*cst), MODULUS))
+	return uint64(Pmod(int64(a*cst), int64(MODULUS)))
 }
 
 func Mult_Gate(x, y uint64, gateID uint64, triplet [3]uint64, cep *DummyProtocol) uint64 {
@@ -38,7 +38,7 @@ func Mult_Gate(x, y uint64, gateID uint64, triplet [3]uint64, cep *DummyProtocol
 	term2 := MultCst_Gate(y, x_a)
 
 	//  − (x − a)(y − b)
-	term3 := uint64(Pmod(int64(-x_a*y_b), MODULUS))
+	term3 := uint64(Pmod(int64(-x_a*y_b), int64(MODULUS)))
 
 	// [c] + [x] * (y − b)
 	half1 := Add_Gate(c, term1)

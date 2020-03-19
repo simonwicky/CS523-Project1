@@ -15,7 +15,7 @@ func secret_share(secret uint64, n int) []uint64 {
 
 	for i := 1; i < n; i++ {
 		share := ring.RandUniform(uint64(MODULUS), 0xffff)
-		secret = uint64(Pmod(int64(secret)-int64(share), MODULUS))
+		secret = uint64(Pmod(int64(secret)-int64(share), int64(MODULUS)))
 		secret_share[i] = share
 	}
 	secret_share[0] = secret

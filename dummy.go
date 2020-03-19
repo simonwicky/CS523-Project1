@@ -8,9 +8,7 @@ import (
 	"github.com/ldsec/lattigo/bfv"
 )
 
-const (
-	MODULUS = 65537
-)
+var MODULUS uint64 = bfv.DefaultParams[bfv.PN13QP218].T
 
 type DummyMessage struct {
 	Party PartyID
