@@ -25,7 +25,7 @@ func secret_share(secret uint64, n int) []uint64 {
 func newRandomVec(n, T uint64) []uint64 {
 	output := make([]uint64, n)
 	for i := range output {
-		output[i] = ring.RandUniform(T, T)
+		output[i] = ring.RandUniform(T, 0x1ffff)
 	}
 	return output
 }

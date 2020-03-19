@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	MODULUS = 9973
+	MODULUS = 65537
 )
 
 type DummyMessage struct {
@@ -136,8 +136,8 @@ func (cep *DummyProtocol) Run() {
 	fmt.Println(cep, "is running")
 
 	//beaverPart
-	cep.Bp.Run()
-	fmt.Println("Protocol beaver has terminated")
+	cep.Triplets = cep.Bp.Run()
+	fmt.Println(cep, "Protocol beaver has terminated")
 
 	//create secret shares and send them
 	cep.Input_share = cep.Input

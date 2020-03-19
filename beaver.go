@@ -9,6 +9,7 @@ import (
 	"github.com/ldsec/lattigo/ring"
 )
 
+//legacy code
 func generateBeaverTriplet(n int, dummyprotocol []*DummyProtocol) {
 	for i := 0; i < n; i++ {
 		a := ring.RandUniform(uint64(MODULUS), 0xffff)
@@ -28,15 +29,12 @@ type BeaverMessage struct {
 	Party  PartyID
 	D      *bfv.Ciphertext
 	loopID uint64
-	//what you need, don't forget to read the right thing in BindNetwork
 }
 
 type BeaverInputs struct {
-	//store a and b and c
-	A  []uint64
-	B  []uint64
-	C  []uint64
-	SK *bfv.SecretKey
+	A []uint64
+	B []uint64
+	C []uint64
 }
 
 type BeaverRemoteParty struct {
@@ -47,9 +45,9 @@ type BeaverRemoteParty struct {
 type BeaverProtocol struct {
 	Chan       chan BeaverMessage
 	Param      *bfv.Parameters
-	Nb_triplet int
+	Nb_triplet uint64
 	Peers      map[PartyID]*BeaverRemoteParty
-	Inputs     []*BeaverInputs
+	Inputs     *BeaverInputs
 	*LocalParty
 }
 
@@ -59,13 +57,13 @@ func (lp *LocalParty) NewBeaverProtocol(nb_triplet int) *BeaverProtocol {
 	bp.LocalParty = lp
 	bp.Param = bfv.DefaultParams[bfv.PN13QP218]
 	bp.Peers = make(map[PartyID]*BeaverRemoteParty, len(lp.Peers))
-	bp.Inputs = make([]*BeaverInputs, len(lp.Peers))
+	bp.Inputs = &BeaverInputs{}
+	bp.Nb_triplet = uint64(nb_triplet)
 	for i, rp := range lp.Peers {
 		bp.Peers[i] = &BeaverRemoteParty{
 			RemoteParty: rp,
 			Chan:        make(chan BeaverMessage, 32),
 		}
-		bp.Inputs[i] = &BeaverInputs{}
 	}
 	return bp
 }
@@ -89,7 +87,7 @@ func (bp *BeaverProtocol) BindNetwork(nw *TCPNetworkStruct) {
 				check(binary.Write(conn, binary.BigEndian, beaverID))
 				check(binary.Write(conn, binary.BigEndian, m.Party))
 				c, _ := m.D.MarshalBinary()
-				//fmt.Println(len(c))
+
 				check(binary.Write(conn, binary.BigEndian, uint64(len(c))))
 				check(binary.Write(conn, binary.BigEndian, c))
 				check(binary.Write(conn, binary.BigEndian, m.loopID))
@@ -98,52 +96,102 @@ func (bp *BeaverProtocol) BindNetwork(nw *TCPNetworkStruct) {
 	}
 }
 
-func (bp *BeaverProtocol) Run() {
+func (bp *BeaverProtocol) Run() [][3]uint64 {
 	//here the protocol is actually run
 	fmt.Println("Protocol beaver is running for", bp.Nb_triplet, "triplets")
 	encoder := bfv.NewEncoder(bp.Param)
 	kgen := bfv.NewKeyGenerator(bp.Param)
-	//evaluator := bfv.NewEvaluator(bp.Param)
+	evaluator := bfv.NewEvaluator(bp.Param)
 
-	//first loop
-	for i, Pi := range bp.Peers {
-		bp.Inputs[i].A = newRandomVec(1<<bp.Param.LogN, bp.Param.T)
-		bp.Inputs[i].B = newRandomVec(1<<bp.Param.LogN, bp.Param.T)
-		bp.Inputs[i].C = mulVec(bp.Inputs[i].A, bp.Inputs[i].B, bp.Param.T)
+	//part 1
+	bp.Inputs.A = newRandomVec(1<<bp.Param.LogN, bp.Param.T)
+	bp.Inputs.B = newRandomVec(1<<bp.Param.LogN, bp.Param.T)
+	bp.Inputs.C = mulVec(bp.Inputs.A, bp.Inputs.B, bp.Param.T)
 
-		plaintextA := bfv.NewPlaintext(bp.Param)
-		encoder.EncodeUint(bp.Inputs[i].A, plaintextA)
+	plaintextA := bfv.NewPlaintext(bp.Param)
+	encoder.EncodeUint(bp.Inputs.A, plaintextA)
 
-		sk, _ := kgen.GenKeyPair()
-		bp.Inputs[i].SK = sk
-		encryptorSk := bfv.NewEncryptorFromSk(bp.Param, sk)
+	sk, _ := kgen.GenKeyPair()
+	encryptorSk := bfv.NewEncryptorFromSk(bp.Param, sk)
+	decryptorSk := bfv.NewDecryptor(bp.Param, sk)
 
-		cipherextA := encryptorSk.EncryptNew(plaintextA)
+	ciphertextA := encryptorSk.EncryptNew(plaintextA)
 
-		m := BeaverMessage{
-			Party:  Pi.ID,
-			D:      cipherextA,
-			loopID: 0,
-		}
-		for _, Pj := range bp.Peers {
-			if Pj.ID != Pi.ID {
-				if Pj.ID == bp.ID {
-					//store own d
-				} else {
-					Pj.Chan <- m
-				}
-			}
+	m := BeaverMessage{
+		Party:  bp.ID,
+		D:      ciphertextA,
+		loopID: 0,
+	}
+	for _, peer := range bp.Peers {
+		if peer.ID != bp.ID {
+			peer.Chan <- m
 		}
 	}
+	//part 2
+	received := 0
+	for m := range bp.Chan {
+		if m.loopID != 0 {
+			bp.Chan <- m
+			continue
+		}
 
-	for i, _ := range bp.Peers {
-		for j, _ := range bp.Peers {
-			if i != j {
-				m := <-bp.Chan
-				fmt.Println(bp.ID, m)
+		r := newRandomVec(1<<bp.Param.LogN, bp.Param.T)
+
+		bp.Inputs.C = subVec(bp.Inputs.C, r, bp.Param.T)
+
+		plaintextR := bfv.NewPlaintext(bp.Param)
+		encoder.EncodeUint(r, plaintextR)
+
+		plaintextB := bfv.NewPlaintext(bp.Param)
+		encoder.EncodeUint(bp.Inputs.B, plaintextB)
+
+		ciphertextD := evaluator.MulNew(m.D, plaintextB)
+		dij := evaluator.AddNew(ciphertextD, plaintextR)
+		//add error?
+
+		msg := BeaverMessage{
+			Party:  bp.ID,
+			D:      dij,
+			loopID: 1,
+		}
+
+		for _, peer := range bp.Peers {
+			if peer.ID == m.Party {
+				peer.Chan <- msg
 			}
 		}
+
+		received++
+		if received == len(bp.Peers)-1 {
+			break
+		}
+
 	}
 
-	return
+	//part 3
+	received = 0
+	ciphertextC := bfv.NewCiphertext(bp.Param, 1<<bp.Param.LogN)
+	for m := range bp.Chan {
+		if m.loopID != 1 {
+			bp.Chan <- m
+			continue
+		}
+		evaluator.Add(ciphertextC, m.D, ciphertextC)
+		received++
+		if received == len(bp.Peers)-1 {
+			break
+		}
+	}
+	plaintextC := decryptorSk.DecryptNew(ciphertextC)
+	c := encoder.DecodeUint(plaintextC)
+	bp.Inputs.C = addVec(bp.Inputs.C, c, bp.Param.T)
+
+	triplets := make([][3]uint64, bp.Nb_triplet)
+	for i := uint64(0); i < bp.Nb_triplet; i++ {
+		triplets[i][0] = bp.Inputs.A[i]
+		triplets[i][1] = bp.Inputs.B[i]
+		triplets[i][2] = bp.Inputs.C[i]
+	}
+
+	return triplets
 }
