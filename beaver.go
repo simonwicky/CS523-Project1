@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"math"
 	"net"
 
 	"github.com/ldsec/lattigo/bfv"
@@ -99,6 +100,9 @@ func (bp *BeaverProtocol) BindNetwork(nw *TCPNetworkStruct) {
 func (bp *BeaverProtocol) Run() [][3]uint64 {
 	//here the protocol is actually run
 	fmt.Println("Protocol beaver is running for", bp.Nb_triplet, "triplets")
+	if bp.Nb_triplet == 0 {
+		return nil
+	}
 	encoder := bfv.NewEncoder(bp.Param)
 	kgen := bfv.NewKeyGenerator(bp.Param)
 	evaluator := bfv.NewEvaluator(bp.Param)
@@ -127,6 +131,7 @@ func (bp *BeaverProtocol) Run() [][3]uint64 {
 			peer.Chan <- m
 		}
 	}
+
 	//part 2
 	received := 0
 	for m := range bp.Chan {
@@ -145,9 +150,18 @@ func (bp *BeaverProtocol) Run() [][3]uint64 {
 		plaintextB := bfv.NewPlaintext(bp.Param)
 		encoder.EncodeUint(bp.Inputs.B, plaintextB)
 
+		//error
+		ciphertextE := bfv.NewCiphertext(bp.Param, 1<<bp.Param.LogN)
+		context, _ := ring.NewContextWithParams(1<<bp.Param.LogN, bp.Param.Qi)
+		error0 := context.NewPoly()
+		error1 := context.NewPoly()
+		context.SampleGaussian(error0, bp.Param.Sigma, uint64(math.Floor(6*bp.Param.Sigma)))
+		context.SampleGaussian(error1, bp.Param.Sigma, uint64(math.Floor(6*bp.Param.Sigma)))
+		ciphertextE.SetValue([]*ring.Poly{error0, error1})
+
 		ciphertextD := evaluator.MulNew(m.D, plaintextB)
 		dij := evaluator.AddNew(ciphertextD, plaintextR)
-		//add error?
+		evaluator.Add(dij, ciphertextE, dij)
 
 		msg := BeaverMessage{
 			Party:  bp.ID,
@@ -167,7 +181,6 @@ func (bp *BeaverProtocol) Run() [][3]uint64 {
 		}
 
 	}
-
 	//part 3
 	received = 0
 	ciphertextC := bfv.NewCiphertext(bp.Param, 1<<bp.Param.LogN)
@@ -192,6 +205,5 @@ func (bp *BeaverProtocol) Run() [][3]uint64 {
 		triplets[i][1] = bp.Inputs.B[i]
 		triplets[i][2] = bp.Inputs.C[i]
 	}
-
 	return triplets
 }
