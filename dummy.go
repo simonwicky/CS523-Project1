@@ -129,12 +129,14 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 	}
 }
 
-func (cep *DummyProtocol) Run() {
+func (cep *DummyProtocol) Run(trusted bool) {
 	fmt.Println(cep, "is running")
 
 	//beaverPart
-	cep.Triplets = cep.Bp.Run()
-	fmt.Println(cep, "Protocol beaver has terminated")
+	if !trusted {
+		cep.Triplets = cep.Bp.Run()
+		fmt.Println(cep, "Protocol beaver has terminated")
+	}
 
 	//create secret shares and send them
 	cep.Input_share = cep.Input

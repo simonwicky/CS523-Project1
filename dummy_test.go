@@ -22,13 +22,14 @@ func TestEval(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			trusted := false
 			circuit := TestCircuits[tc.index]
-			dp, wg := SetUpMPC(circuit)
+			dp, wg := SetUpMPC(circuit, trusted)
 
 			//waitGroup and Run
 			for _, cep := range dp {
 				cep.Add(1)
-				go cep.Run()
+				go cep.Run(trusted)
 			}
 			wg.Wait()
 

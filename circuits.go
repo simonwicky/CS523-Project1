@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.WaitGroup) {
+func SetUpMPC(circuit *TestCircuit, trusted bool) (dummyProtocol []*DummyProtocol, wg *sync.WaitGroup) {
 
 	N := uint64(len(circuit.Peers))
 	P := make([]*LocalParty, N, N)
@@ -35,7 +35,9 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 	}
 
 	//trusted third party setting
-	//generateBeaverTriplet(nb_mult, dummyProtocol)
+	if trusted {
+		generateBeaverTriplet(nb_mult, dummyProtocol)
+	}
 
 	network := GetTestingTCPNetwork(P)
 	fmt.Println("parties connected")

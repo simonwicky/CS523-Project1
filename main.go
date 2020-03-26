@@ -74,7 +74,7 @@ func Client(partyID PartyID, partyInput, circuitID uint64) {
 	dummyProtocol.Bp.BindNetwork(network)
 
 	// Evaluate the circuit
-	dummyProtocol.Run()
+	dummyProtocol.Run(false)
 
 	fmt.Println(lp, "completed with output", dummyProtocol.Output)
 }
