@@ -80,7 +80,6 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 					c := make([]byte, len)
 					check(binary.Read(conn, binary.BigEndian, &c))
 					check(binary.Read(conn, binary.BigEndian, &loopID))
-					//fmt.Println(c)
 					msg := BeaverMessage{
 						Party:  PartyID(id),
 						D:      bfv.NewCiphertext(cep.Bp.Param, 1<<cep.Bp.Param.LogN),
@@ -154,7 +153,6 @@ func (cep *DummyProtocol) Run() {
 			cep.Secret[m.Party] = m.Value
 			received++
 			if received == len(cep.Peers)-1 {
-				//close(cep.Chan)
 				break
 			}
 		} else {

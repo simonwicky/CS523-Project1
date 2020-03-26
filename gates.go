@@ -64,7 +64,6 @@ func reveal_gate(cep *DummyProtocol, value uint64, id [2]uint64) (output uint64)
 			output = (output + m.Value) % MODULUS
 			received++
 			if received == len(cep.Peers)-1 {
-				//close(cep.Chan)
 				break
 			}
 		} else {

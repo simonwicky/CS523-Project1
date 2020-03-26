@@ -39,15 +39,9 @@ func main() {
 
 func Client(partyID PartyID, partyInput, circuitID uint64) {
 
-	//N := uint64(len(peers))
-	// peers := map[PartyID]string {
-	// 	0: "localhost:6660",
-	// 	1: "localhost:6661",
-	// 	2: "localhost:6662",
-	// }
 	circuit := TestCircuits[circuitID]
 
-	//generateBeaverTriplet
+	//nb of triplets to generate
 	nb_mult := 0
 	for _, op := range circuit.Circuit {
 		switch op.(type) {
@@ -74,6 +68,7 @@ func Client(partyID PartyID, partyInput, circuitID uint64) {
 	dummyProtocol := lp.NewDummyProtocol(partyInput)
 	dummyProtocol.Bp = lp.NewBeaverProtocol(nb_mult)
 	dummyProtocol.Circuit = circuit.Circuit
+
 	// Bind evaluation protocol to the network
 	dummyProtocol.BindNetwork(network)
 	dummyProtocol.Bp.BindNetwork(network)

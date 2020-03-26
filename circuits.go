@@ -13,7 +13,7 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 	P := make([]*LocalParty, N, N)
 	dummyProtocol = make([]*DummyProtocol, N, N)
 
-	//generateBeaverTriplet
+	//nb of triplet to generate
 	nb_mult := 0
 	for _, op := range circuit.Circuit {
 		switch op.(type) {
@@ -34,6 +34,7 @@ func SetUpMPC(circuit *TestCircuit) (dummyProtocol []*DummyProtocol, wg *sync.Wa
 		dummyProtocol[i].Circuit = circuit.Circuit
 	}
 
+	//trusted third party setting
 	//generateBeaverTriplet(nb_mult, dummyProtocol)
 
 	network := GetTestingTCPNetwork(P)
