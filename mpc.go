@@ -10,17 +10,17 @@ import (
 
 var MODULUS uint64 = bfv.DefaultParams[bfv.PN13QP218].T
 
-type DummyMessage struct {
+type MPCMessage struct {
 	Party PartyID
 	Value uint64
 	Id0   uint64
 	Id1   uint64
 }
 
-type DummyProtocol struct {
+type MPCProtocol struct {
 	*LocalParty
-	Chan  chan DummyMessage
-	Peers map[PartyID]*DummyRemote
+	Chan  chan MPCMessage
+	Peers map[PartyID]*MPCRemote
 
 	Bp *BeaverProtocol
 
@@ -33,20 +33,20 @@ type DummyProtocol struct {
 	Output      uint64
 }
 
-type DummyRemote struct {
+type MPCRemote struct {
 	*RemoteParty
-	Chan chan DummyMessage
+	Chan chan MPCMessage
 }
 
-func (lp *LocalParty) NewDummyProtocol(input uint64) *DummyProtocol {
-	cep := new(DummyProtocol)
+func (lp *LocalParty) NewMPCProtocol(input uint64) *MPCProtocol {
+	cep := new(MPCProtocol)
 	cep.LocalParty = lp
-	cep.Chan = make(chan DummyMessage, 32)
-	cep.Peers = make(map[PartyID]*DummyRemote, len(lp.Peers))
+	cep.Chan = make(chan MPCMessage, 32)
+	cep.Peers = make(map[PartyID]*MPCRemote, len(lp.Peers))
 	for i, rp := range lp.Peers {
-		cep.Peers[i] = &DummyRemote{
+		cep.Peers[i] = &MPCRemote{
 			RemoteParty: rp,
-			Chan:        make(chan DummyMessage, 32),
+			Chan:        make(chan MPCMessage, 32),
 		}
 	}
 	cep.Secret = make([]uint64, len(lp.Peers))
@@ -55,7 +55,7 @@ func (lp *LocalParty) NewDummyProtocol(input uint64) *DummyProtocol {
 	return cep
 }
 
-func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
+func (cep *MPCProtocol) BindNetwork(nw *TCPNetworkStruct) {
 	for partyID, conn := range nw.Conns {
 
 		if partyID == cep.ID {
@@ -65,7 +65,7 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 		rp := cep.Peers[partyID]
 
 		// Receiving loop from remote
-		go func(conn net.Conn, rp *DummyRemote) {
+		go func(conn net.Conn, rp *MPCRemote) {
 			for {
 				var msgID uint64
 				var err error
@@ -88,7 +88,7 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 					msg.D.UnmarshalBinary(c)
 					cep.Bp.Chan <- msg
 				} else if msgID == 1 {
-					//dummyMessage
+					//MPCMessage
 					var id, val, idmsg0, idmsg1 uint64
 					err = binary.Read(conn, binary.BigEndian, &id)
 					check(err)
@@ -98,7 +98,7 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 					check(err)
 					err = binary.Read(conn, binary.BigEndian, &idmsg1)
 					check(err)
-					msg := DummyMessage{
+					msg := MPCMessage{
 						Party: PartyID(id),
 						Value: val,
 						Id0:   idmsg0,
@@ -113,13 +113,13 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 		}(conn, rp)
 
 		// Sending loop of remote
-		go func(conn net.Conn, rp *DummyRemote) {
-			var m DummyMessage
+		go func(conn net.Conn, rp *MPCRemote) {
+			var m MPCMessage
 			var open = true
 			for open {
 				m, open = <-rp.Chan
-				dummyID := uint64(1)
-				check(binary.Write(conn, binary.BigEndian, dummyID))
+				mpcID := uint64(1)
+				check(binary.Write(conn, binary.BigEndian, mpcID))
 				check(binary.Write(conn, binary.BigEndian, m.Party))
 				check(binary.Write(conn, binary.BigEndian, m.Value))
 				check(binary.Write(conn, binary.BigEndian, m.Id0))
@@ -129,7 +129,7 @@ func (cep *DummyProtocol) BindNetwork(nw *TCPNetworkStruct) {
 	}
 }
 
-func (cep *DummyProtocol) Run(trusted bool) {
+func (cep *MPCProtocol) Run(trusted bool) {
 	fmt.Println(cep, "is running")
 
 	//beaverPart
@@ -143,7 +143,7 @@ func (cep *DummyProtocol) Run(trusted bool) {
 	shares := secret_share(cep.Input, len(cep.Peers))
 	for _, peer := range cep.Peers {
 		if peer.ID != cep.ID {
-			peer.Chan <- DummyMessage{cep.ID, uint64(shares[peer.ID]), 0, 0}
+			peer.Chan <- MPCMessage{cep.ID, uint64(shares[peer.ID]), 0, 0}
 		}
 	}
 	cep.Secret[cep.ID] = shares[cep.ID]

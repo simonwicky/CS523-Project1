@@ -65,16 +65,16 @@ func Client(partyID PartyID, partyInput, circuitID uint64) {
 	<-time.After(time.Second) // Leave time for others to connect
 
 	// Create a new circuit evaluation protocol
-	dummyProtocol := lp.NewDummyProtocol(partyInput)
-	dummyProtocol.Bp = lp.NewBeaverProtocol(nb_mult)
-	dummyProtocol.Circuit = circuit.Circuit
+	mpcProtocol := lp.NewMPCProtocol(partyInput)
+	mpcProtocol.Bp = lp.NewBeaverProtocol(nb_mult)
+	mpcProtocol.Circuit = circuit.Circuit
 
 	// Bind evaluation protocol to the network
-	dummyProtocol.BindNetwork(network)
-	dummyProtocol.Bp.BindNetwork(network)
+	mpcProtocol.BindNetwork(network)
+	mpcProtocol.Bp.BindNetwork(network)
 
 	// Evaluate the circuit
-	dummyProtocol.Run(false)
+	mpcProtocol.Run(false)
 
-	fmt.Println(lp, "completed with output", dummyProtocol.Output)
+	fmt.Println(lp, "completed with output", mpcProtocol.Output)
 }

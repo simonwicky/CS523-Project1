@@ -7,11 +7,11 @@ import (
 	"sync"
 )
 
-func SetUpMPC(circuit *TestCircuit, trusted bool) (dummyProtocol []*DummyProtocol, wg *sync.WaitGroup) {
+func SetUpMPC(circuit *TestCircuit, trusted bool) (mpcProtocol []*MPCProtocol, wg *sync.WaitGroup) {
 
 	N := uint64(len(circuit.Peers))
 	P := make([]*LocalParty, N, N)
-	dummyProtocol = make([]*DummyProtocol, N, N)
+	mpcProtocol = make([]*MPCProtocol, N, N)
 
 	//nb of triplet to generate
 	nb_mult := 0
@@ -29,27 +29,27 @@ func SetUpMPC(circuit *TestCircuit, trusted bool) (dummyProtocol []*DummyProtoco
 		P[i].WaitGroup = wg
 		check(err)
 
-		dummyProtocol[i] = P[i].NewDummyProtocol(circuit.Inputs[i][GateID(i)])
-		dummyProtocol[i].Bp = P[i].NewBeaverProtocol(nb_mult)
-		dummyProtocol[i].Circuit = circuit.Circuit
+		mpcProtocol[i] = P[i].NewMPCProtocol(circuit.Inputs[i][GateID(i)])
+		mpcProtocol[i].Bp = P[i].NewBeaverProtocol(nb_mult)
+		mpcProtocol[i].Circuit = circuit.Circuit
 	}
 
 	//trusted third party setting
 	if trusted {
-		generateBeaverTriplet(nb_mult, dummyProtocol)
+		generateBeaverTriplet(nb_mult, mpcProtocol)
 	}
 
 	network := GetTestingTCPNetwork(P)
 	fmt.Println("parties connected")
 
-	for i, Pi := range dummyProtocol {
+	for i, Pi := range mpcProtocol {
 		Pi.Bp.BindNetwork(network[i])
 		Pi.BindNetwork(network[i])
 	}
 	return
 }
 
-func (cep *DummyProtocol) ComputeCircuit() (out uint64, err error) {
+func (cep *MPCProtocol) ComputeCircuit() (out uint64, err error) {
 	secret := cep.Secret
 	circuit := cep.Circuit
 

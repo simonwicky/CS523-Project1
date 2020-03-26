@@ -24,16 +24,16 @@ func TestEval(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			trusted := false
 			circuit := TestCircuits[tc.index]
-			dp, wg := SetUpMPC(circuit, trusted)
+			mpcP, wg := SetUpMPC(circuit, trusted)
 
 			//waitGroup and Run
-			for _, cep := range dp {
+			for _, cep := range mpcP {
 				cep.Add(1)
 				go cep.Run(trusted)
 			}
 			wg.Wait()
 
-			for _, cep := range dp {
+			for _, cep := range mpcP {
 				if cep.Output != circuit.ExpOutput {
 					t.Errorf("peer %v output %v did not match with expected value %v\n", cep.ID, cep.Output, circuit.ExpOutput)
 				}

@@ -19,7 +19,7 @@ func MultCst_Gate(a, cst uint64) uint64 {
 	return uint64(Pmod(int64(a*cst), int64(MODULUS)))
 }
 
-func Mult_Gate(x, y uint64, gateID uint64, triplet [3]uint64, cep *DummyProtocol) uint64 {
+func Mult_Gate(x, y uint64, gateID uint64, triplet [3]uint64, cep *MPCProtocol) uint64 {
 	a := triplet[0]
 	b := triplet[1]
 	c := triplet[2]
@@ -50,11 +50,11 @@ func Mult_Gate(x, y uint64, gateID uint64, triplet [3]uint64, cep *DummyProtocol
 	return Add_Gate(half1, half2)
 }
 
-func reveal_gate(cep *DummyProtocol, value uint64, id [2]uint64) (output uint64) {
+func reveal_gate(cep *MPCProtocol, value uint64, id [2]uint64) (output uint64) {
 	output = value
 	for _, peer := range cep.Peers {
 		if peer.ID != cep.ID {
-			peer.Chan <- DummyMessage{cep.ID, value, id[0], id[1]}
+			peer.Chan <- MPCMessage{cep.ID, value, id[0], id[1]}
 		}
 	}
 
@@ -73,6 +73,6 @@ func reveal_gate(cep *DummyProtocol, value uint64, id [2]uint64) (output uint64)
 	return
 }
 
-func Reveal_Gate(cep *DummyProtocol, value uint64, gateID uint64) uint64 {
+func Reveal_Gate(cep *MPCProtocol, value uint64, gateID uint64) uint64 {
 	return reveal_gate(cep, value, [2]uint64{gateID, 0})
 }
