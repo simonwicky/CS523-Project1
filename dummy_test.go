@@ -34,10 +34,10 @@ func TestEval(t *testing.T) {
 
 			for _, cep := range dp {
 				if cep.Output != circuit.ExpOutput {
-					t.Errorf("peer %v output %v did not match with expected value %v", cep.ID, cep.Output, circuit.ExpOutput)
+					t.Errorf("peer %v output %v did not match with expected value %v\n", cep.ID, cep.Output, circuit.ExpOutput)
 				}
 			}
-			fmt.Printf("%v tested successfull with output %v", tc.name, circuit.ExpOutput)
+			fmt.Printf("%v tested successfull with output %v\n", tc.name, circuit.ExpOutput)
 		})
 	}
 }
