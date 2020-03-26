@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-
 func main() {
 	prog := os.Args[0]
 	args := os.Args[1:]
@@ -29,40 +28,53 @@ func main() {
 		os.Exit(1)
 	}
 
-	Client(PartyID(partyID), partyInput)
-}
-
-
-func Client(partyID PartyID, partyInput uint64) {
-
-	//N := uint64(len(peers))
-	peers := map[PartyID]string {
-		0: "localhost:6660",
-		1: "localhost:6661",
-		2: "localhost:6662",
+	circuitID, errCircuitID := strconv.ParseUint(args[2], 10, 64)
+	if errCircuitID != nil {
+		fmt.Println("Circuit ID should be an unsigned integer")
+		os.Exit(1)
 	}
 
-	// Create a local party 
-	lp, err := NewLocalParty(partyID, peers)
+	Client(PartyID(partyID), partyInput, circuitID)
+}
+
+func Client(partyID PartyID, partyInput, circuitID uint64) {
+
+	circuit := TestCircuits[circuitID]
+
+	//nb of triplets to generate
+	nb_mult := 0
+	for _, op := range circuit.Circuit {
+		switch op.(type) {
+		case *Mult:
+			nb_mult += 1
+		}
+	}
+
+	// Create a local party
+	lp, err := NewLocalParty(partyID, circuit.Peers)
 	check(err)
 
 	// Create the network for the circuit
 	network, err := NewTCPNetwork(lp)
 	check(err)
 
-	// Connect the circuit network 
+	// Connect the circuit network
 	err = network.Connect(lp)
 	check(err)
 	fmt.Println(lp, "connected")
-	<- time.After(time.Second) // Leave time for others to connect
+	<-time.After(time.Second) // Leave time for others to connect
 
-	// Create a new circuit evaluation protocol 
+	// Create a new circuit evaluation protocol
 	dummyProtocol := lp.NewDummyProtocol(partyInput)
+	dummyProtocol.Bp = lp.NewBeaverProtocol(nb_mult)
+	dummyProtocol.Circuit = circuit.Circuit
+
 	// Bind evaluation protocol to the network
 	dummyProtocol.BindNetwork(network)
+	dummyProtocol.Bp.BindNetwork(network)
 
 	// Evaluate the circuit
-	dummyProtocol.Run()
+	dummyProtocol.Run(false)
 
 	fmt.Println(lp, "completed with output", dummyProtocol.Output)
 }

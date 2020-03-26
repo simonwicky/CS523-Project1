@@ -2,47 +2,43 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 )
 
-func TestDummyProtocol(t *testing.T) {
-	peers := map[PartyID]string {
-		0: "localhost:6660",
-		1: "localhost:6661",
-		2: "localhost:6662",
+func TestEval(t *testing.T) {
+	testCases := []struct {
+		name  string
+		index int
+	}{
+		{"circuit1", 0},
+		{"circuit2", 1},
+		{"circuit3", 2},
+		{"circuit4", 3},
+		{"circuit5", 4},
+		{"circuit6", 5},
+		{"circuit7", 6},
+		{"circuit8", 7},
+		{"circuit9", 8},
 	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			trusted := false
+			circuit := TestCircuits[tc.index]
+			dp, wg := SetUpMPC(circuit, trusted)
 
-	N := uint64(len(peers))
-	P := make([]*LocalParty, N, N)
-	dummyProtocol := make([]*DummyProtocol, N, N)
+			//waitGroup and Run
+			for _, cep := range dp {
+				cep.Add(1)
+				go cep.Run(trusted)
+			}
+			wg.Wait()
 
-	var err error
-	wg := new(sync.WaitGroup)
-	for i := range peers {
-		P[i], err = NewLocalParty(i, peers)
-		P[i].WaitGroup = wg
-		check(err)
-
-		dummyProtocol[i] = P[i].NewDummyProtocol(uint64(i+10))
+			for _, cep := range dp {
+				if cep.Output != circuit.ExpOutput {
+					t.Errorf("peer %v output %v did not match with expected value %v\n", cep.ID, cep.Output, circuit.ExpOutput)
+				}
+			}
+			fmt.Printf("%v tested successfull with output %v\n", tc.name, circuit.ExpOutput)
+		})
 	}
-
-	network := GetTestingTCPNetwork(P)
-	fmt.Println("parties connected")
-
-	for i, Pi := range dummyProtocol {
-		Pi.BindNetwork(network[i])
-	}
-
-	for _, p := range dummyProtocol {
-		p.Add(1)
-		go p.Run()
-	}
-	wg.Wait()
-
-	for _, p := range dummyProtocol {
-		fmt.Println(p, "completed with output", p.Output)
-	}
-
-	fmt.Println("test completed")
 }
