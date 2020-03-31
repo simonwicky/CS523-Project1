@@ -12,7 +12,7 @@
 
 
 \title{CS523 Project 1 Report}
-\author{Author 1, Author 2}
+\author{Wicky Simon, Nunes Silva Daniel Filipe}
 \date{February 2020}
 
 \begin{document}
@@ -20,9 +20,22 @@
 \maketitle
 
 \begin{abstract}
-    Please report your design, implementation details, findings of the first project in this report. \\
-    You can add references if necessary \cite{article}. \\
-    THE REPORT SHOULD NOT EXCEED 3 PAGES.
+This project consists in the implementation a $N$-party multiparty
+computations system. Unlike a traditional approach, this aims to compute
+the result of a given circuit using users secret inputs without requiring
+them to reveal them explicitely. To achieve it, our Go program must be runned
+by each of the users who provide their secret values and the ciruit they
+want to compute together. Then, they share their additive secret sharings
+across the network they are linked with, parse the circuit, generate Beaver
+triplets when necessary and evaluate the result before retrieving it.
+We analyze the scenarios and the consequenting tradeoffs in which the users
+have access to a trusted third-party and the one in which they have not. We
+make use of the Lattigo library for the cryptographic operations and the
+algebraic structure implementations it provides.
+
+Please report your design, implementation details, findings of the first project in this report. \\
+You can add references if necessary \cite{article}. \\
+THE REPORT SHOULD NOT EXCEED 3 PAGES.
 \end{abstract}
 \section{Introduction}
 Give a brief introduction about the aim of the project, and your road-map about the design/implementation.
