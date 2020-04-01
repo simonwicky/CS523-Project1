@@ -54,17 +54,47 @@ Give a brief introduction about the aim of the project, and your road-map about 
 \section{Part I}
 
 \subsection{Threat model}
+The asset to protect for a party is the input. During the protocl, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending the result.\\
+All parties follow the "honest but curious" threat model. They do not deviate from the protocol and compute the correct circuit, but try to infer informations about other's input.\\
+Furthermore, a third-party is trusted to generate the beaver triplets, necessary for the computation of multiplications.
+
 Give the corresponding threat model for the first part of the project that you implemented. 
 \subsection{Implementation details}
 \begin{itemize}
-    \item Give your implementation details
-    \item Detail the circuit you created at the end of the first part
+    \item \textit{main.go} : This file is the entry point of the programm. It handles the creation of a party, the set up of the network, the circuit and launch the computation. The structure has been slightly adapted from the handout, to fit the changes made. Note that since each party runs independently, this file is unused in the first part, since the beaver triplets are generated in a single location.
+    \item \textit{helper.go} : This file contains two helper methods :
+        \begin{itemize}
+            \item Pmod(x,mod) : computes x modulo mod. This method is necessary because the $\%$ operator can return negative results
+            \item secret\_share(secret,n) : Split a secret into $n$ parts using additive sharing.
+        \end{itemize}
+    \item \textit{gates.go} : Implements the different gates needed for the circuits.
+    \item \textit{circuits.go} : Contains two methods :
+        \begin{itemize}
+            \item SetUpMPC(circuit, trusted) : Create the necessary structure for the protocol to run, and generate the beaver triplets depending on the chosen setting for \textit{trusted}. This setting is used for modularity between Part 1 and Part 2. During this set up, the circuit is also parsed to determine the number of beaver triplets to generate.
+            \item ComputeCircuit() : Uses the gates from \textit{gates.go} to actually performs the computation, and return the result.
+        \end{itemize}
+    \item \textit{mpc.go} : This file is the heart of the protocol. Each party is represented as a MPCProtocol and contains an array of MPCRemote to abstract the other parties. The communication are performed with MPCMessage, containing various field needed. The \textit{Run(trusted)} method works as follows :
+        \begin{enumerate}
+            \item It checks if it have to generate Beaver triplets using the \textit{trusted} value. This is mainly used for modularity between Part 1 and Part 2.
+            \item The input is split into secret shares and sent.
+            \item The shares are collected.
+            \item The circuit is computed and the output is made available.
+        \end{enumerate}
+    \item The circuit added is inspired by the cosine theorem which states, for a triangle with sides $a$, $b$, and $c$ with angle $\gamma = \widehat{ab}$, that $a^2 + b^2 - 2ab\cos\gamma = c^2$. To adapt this formula to the available gates and requirements, the following function is computed : $f(a,b,c) = a^2 + b^2 - 2abc + K$. With random input $42$, $3$ and $5$, $f$ yields $448$ as a result. The details of the computation are as follows :
+        \includegraphics[scale=0.3]{main.png}
 \end{itemize}
 \section{Part II}
 \subsection{Threat model}
-Give the corresponding threat model for the second part of the project that you implemented. 
+The asset to protect for a party is the input. During the protocl, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending the result.\\
+All parties follow the "honest but curious" threat model. They do not deviate from the protocol and compute the correct circuit, but try to infer informations about other's input.\\
+In this part, no trusted third-party exist. The parties generates the beaver triplets using homomorphic encryption.
 \subsection{Implementation details}
-Give implementation details.
+The implementation of this part is identical to the previous part, with the addition of the \textit{beaver.go} file which is used to augment the protocol as follows. : 
+\begin{itemize}
+    \item Each MPCProtocol now contains a BeaverProtocol which is run before the computation of the circuit, if beaver triplets are needed.
+    \item BeaverProtocols communicates using BeaverMessage sent using the same port as MPCMessage. To avoid confusion, BeaverMessage are sent preceded by a $0$ value, while MPCMessage are sent preceded by a $1$ value.
+    \item The protocol is then run and works according to the handout specifications.
+\end{itemize}
 \section{Evaluation}
 - Give a comprehensive comparison and evaluation about Part1 and Part2 of the project including performance results. Feel free to use charts, tables, plots...\\
 \begin{itemize}
