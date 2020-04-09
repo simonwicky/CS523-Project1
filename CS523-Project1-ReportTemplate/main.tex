@@ -13,15 +13,15 @@
 
 \title{CS523 Project 1 Report}
 \author{Wicky Simon, Nunes Silva Daniel Filipe}
-\date{February 2020}
+\date{February-April 2020}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-This project consists in the implementation a $N$-party multiparty
-computations system. Unlike a traditional approach, this aims to compute
+This project consists in the implementation of $N$-party multiparty
+computations systems. Unlike a traditional approach, this aims to compute
 the result of a given circuit using users secret inputs without requiring
 them to reveal them explicitely. To achieve it, our Go program must be runned
 by each of the users who provide their secret values and the ciruit they
@@ -29,14 +29,11 @@ want to compute together. Then, they share their additive secret sharings
 across the network they are linked with, parse the circuit, generate Beaver
 triplets when necessary and evaluate the result before retrieving it.
 We analyze the scenarios and the consequenting tradeoffs in which the users
-have access to a trusted third-party and the one in which they have not. We
+have access to a common trusted third-party and the one in which they have not. We
 make use of the Lattigo library for the cryptographic operations and the
 algebraic structure implementations it provides.
-
-%Please report your design, implementation details, findings of the first project in this report. \\
-%You can add references if necessary \cite{article}. \\
-%THE REPORT SHOULD NOT EXCEED 3 PAGES.
 \end{abstract}
+
 \section{Introduction}
 The aim of this project is to design, implement and assess two MPC engines using
 the Go programming language. First, two weeks are dedicated to the understanding
@@ -50,19 +47,16 @@ generate Beaver triplets with no trusted third party but using BFV homomorphic
 encryption handled by Lattigo. Finally, we dedicate one week to revise our
 implementations, compare and evaluate them.
 
-%Give a brief introduction about the aim of the project, and your road-map about the design/implementation.
 \section{Part I}
-
 \subsection{Threat model}
-The asset to protect for a party is the input. During the protocol, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending the result.
+The asset to protect for a party is its input. During the protocol, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending them back the result.
 
 All parties follow the "honest but curious" threat model. They do not deviate from the protocol and compute the correct circuit, but try to infer informations about other's input.
 
-At the end of the computation, each party get the correct result of the circuit for the provided input.
+At the end of the computation, each party get the correct result of the circuit for the provided inputs.
 
 Furthermore, a third-party is trusted to generate the Beaver triplets, necessary for the computation of multiplications.
 
-%Give the corresponding threat model for the first part of the project that you implemented. 
 \subsection{Implementation details}
 \begin{itemize}
     \item \textit{main.go} : This file is the entry point of the programm. It handles the creation of a party, the set up of the network, the circuit and launch the computation. The structure has been slightly adapted from the handout, to fit the changes. Note that since each party runs independently, this file is unused in the first part, Beaver triplets are generated in a single location.
@@ -84,68 +78,57 @@ Furthermore, a third-party is trusted to generate the Beaver triplets, necessary
         \end{itemize}
     \item \textit{mpc.go} : This file is the heart of the protocol. Each party is represented as a MPCProtocol and contains an array of MPCRemote to abstract the other parties. The communication are performed with MPCMessage, containing various field needed. The \textit{Run(trusted)} method works as follows :
         \begin{enumerate}
-            \item It checks if it have to generate Beaver triplets using the \textit{trusted} value. This is mainly used for modularity between Part 1 and Part 2.
+            \item It checks if it has to generate Beaver triplets using the \textit{trusted} value. This is mainly used for modularity between Part 1 and Part 2.
             \item The input is split into secret shares and sent.
             \item The shares are collected.
             \item The circuit is computed and the output is made available.
         \end{enumerate}
-    \item The circuit added is inspired by the cosine theorem which states, for a triangle with sides $a$, $b$, and $c$ with angle $\gamma = \widehat{ab}$, that $a^2 + b^2 - 2ab\cos\gamma = c^2$. To adapt this formula to the available gates and requirements, the following function is computed : $f(a,b,c) = a^2 + b^2 - 2abc + K$. With random input $42$, $3$ and $5$, $f$ yields $448$ as a result. The details of the computation are as follows :
-      \begin{figure}[h]
-        \caption{Our own complex circuit}
-        \includegraphics[width=0.5\textwidth]{main.png}
-      \end{figure}
-To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test.go:25} is set to true.
+      \item The circuit added is inspired by the cosine theorem which states, for a triangle with sides $a$, $b$, and $c$ with angle $\gamma = \widehat{ab}$, that $a^2 + b^2 - 2ab\cos\gamma = c^2$. To adapt this formula to the available gates and requirements, the following function is computed : $f(a,b,c) = a^2 + b^2 - 2abc + K$. With random input $42$, $3$ and $5$, $f$ yields $448$ as a result. The details of the computation are as in figure \ref{fig:circ}. To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test.go:25} is set to true.
+\begin{figure}[h]
+  \caption{Our own complex circuit}
+  \label{fig:circ}
+  \includegraphics[width=0.5\textwidth]{main.png}
+\end{figure}
 
 \section{Part II}
 \subsection{Threat model}
-The asset to protect for a party is the input. During the protocl, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending the result.
+The asset to protect for a party is its input. During the protocol, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending the result.
 
 All parties follow the "honest but curious" threat model. They do not deviate from the protocol and compute the correct circuit, but try to infer informations about other's input.
 
 At the end of the computation, each party get the correct result of the circuit for the provided input.
 
 In this part, no trusted third-party exists. The parties generate the Beaver triplets using homomorphic encryption.
+
 \subsection{Implementation details}
-The implementation of this part is identical to the previous part, with the addition of the \textit{beaver.go} file which is used to augment the protocol as follows. : 
+The implementation of this part is identical to the previous part, with the addition of the \textit{beaver.go} file which is used to augment the protocol as follows : 
 \begin{itemize}
-    \item Each MPCProtocol now contains a BeaverProtocol which is run before the computation of the circuit, if beaver triplets are needed.
+    \item Each MPCProtocol now contains a BeaverProtocol which is run before the computation of the circuit, if Beaver triplets are needed.
     \item BeaverProtocols communicates using BeaverMessage sent using the same port as MPCMessage. To avoid confusion, BeaverMessage are sent preceded by a $0$ value, while MPCMessage are sent preceded by a $1$ value.
     \item The protocol is then run and works according to the handout specifications.
 \end{itemize}
-
 To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test.go:25} is set to false.
+
 \section{Evaluation}
-- Give a comprehensive comparison and evaluation about Part1 and Part2 of the project including performance results. Feel free to use charts, tables, plots...
 Our expectations about the two systems performance are the following :
 \begin{itemize}
-    \item The addition, addition with a constant, subtraction and multiplication by a constant are gates which compute their respective output locally. A quick glance at the code is necessary to see that they take constant time. The reveal operation as well as the multiplication which uses the reveal operation have to use the network to compute their ouput. Hence they are inherently slower and are directly linked the performance of the circuits.
-    %What affects the efficiency of the executions? Be specific, which types of operations/circuits are directly linked to performance?
-    \item The difference between Part 1 and Part 2 is the Beaver triplet generation. Part 1 generates them in one place, before the main protocol, acting like a trusted third-party. In Part 2, every party collaborates to generate the triplets. This leads to Part 1 being very efficient whereas Part 2 is order of magnitude slower, since Beaver triplets generation requires homomorphic encryption and a lot of network traffic. %Is there any difference in terms of performance between Part I and Part II? Why? 
+    \item The addition, addition with a constant, subtraction and multiplication by a constant are gates which compute their respective output locally have low impact on performace. A quick glance at the code is necessary to see that they take constant time. The reveal operation as well as the multiplication which uses the reveal operation have to use the network to compute their ouput. Hence they are inherently slower and are directly linked the performance of the circuits.
+    \item The difference between Part 1 and Part 2 is the Beaver triplet generation. Part 1 generates them in one place, before the main protocol, acting like a trusted third-party. In Part 2, every party collaborates to generate the triplets. This leads to Part 1 being relatively efficient whereas Part 2 is order of magnitude slower, since Beaver triplets generation requires homomorphic encryption and a lot of network traffic.
 \end{itemize}
-
 \begin{figure}[h]
   \caption{Benchmarks on personal computers}
   \label{fig:bench}
   \includegraphics[width=0.5\textwidth]{Part_1_benchmark.png}
   \includegraphics[width=0.5\textwidth]{Part_2_benchmark.png}
 \end{figure}
-
-We make use of the testing package provided by the Go programming language to perform benchmarks on our own personal computers. It helps the programmer to analyze its code performance by running it multiple times and outputting robust measurements in a reasonable amount of time. By doing this, our expectations seem to be fulfilled according to the bar charts on figure \ref{fig:bench}. We run the benchmarks on each computer for each part and circuits of the project. It features a logaritmic scale that helps visualizing the order of magnitude of overhead due to the kind of system we implement. First, notice that simple circuits which do not require multiplications, on both parts, have a similar complexity. Then, we can compare on each part, simple and complex circuits. Concerning part 1, the time required to execute complex circuits seems reasonable considering their increased complexity. We should keep in mind that the longer a circuit takes to execute the less number of times it will be run for the benchmark, it means that longer measurements are less reliable than the short ones. Nevertheless, the trend is similar on both computer. Finally, we can confirm our concerns about orders of magnitude of overhead related to part 2 when used for multiplications. The additional homomorphic encryption and network traffic have a huge price both in computation and communication. We also notice that part 2 require a lot more memory than available on our computers and it could, therefore, be a bottleneck as well.
+We make use of the testing package provided by the Go programming language to perform benchmarks on our own personal computers. It helps the programmer to analyze its code performance by running it multiple times and outputting robust measurements in a reasonable amount of time. By doing this, our expectations seem to be fulfilled according to the bar charts on figure \ref{fig:bench}. We run the benchmarks on each computer for each part and circuits of the project. It features a logaritmic scale that helps visualizing the order of magnitude of overhead due to the kind of system we implement. First, notice that simple circuits which do not require multiplications, on both parts, have a similar complexity. Then, we can compare on each part, simple and complex circuits. Concerning part 1, the time required to execute complex circuits seems reasonable considering their increased complexity. We should keep in mind that the longer a circuit takes to execute the less number of times it will be run for the benchmark, it means that longer measurements are less reliable than the short ones. Nevertheless, the trend is similar on both computers. Finally, we can confirm our concerns about orders of magnitude of overhead related to part 2 when used for multiplications. The additional homomorphic encryption and network traffic have a huge price both in computation and communication. We also notice that part 2 require a lot more memory than available on our computers and it could, therefore, be a bottleneck as well.
 
 \section{Discussion}
-This project and the way the two parts were compared illustrates a principle often told in class that privacy has its cost. At the end, we face the tradeoff between performance & efficiency and privacy & security. The performance overhead seems to grow exponentially comparing to the complexity of the system. In any setup, simple operations such as additions, additions by a constant or multiplication by a constant remain easy. It is a completely different story when its comes to slightly more complex operations such as multiplications. On one hand it is less trivial to implement it for the programmer even when one has access to cryptographic libraries such as Lattigo, there are still parameters to optimize otherwise the system can simply become unusable. On the other hand, the user also feels considerable side effects when using this kind of systems, especially the second one. It is not desirable for a user to drain its battery or burn its processor for such computation, in other words, the solution should not be worse than the initial problem. Considering our results, we would say that the technology is here and we know how to make use of it but it must fit the appropriate scenario. If there is a third party that we can trust according to the threat model, then considering the performance, we should use the system implemented in part 1. If we are in a more hostile scenario that does not allow to trust a third party then we should trust mathematics and implement the second system if we want to preserve privacy despite computation and communication overhead. This is particularly useful to ensure that a nasty trusted third party does not manipulate the Beaver triplets in order to change the final result according to what some adversary would like to achieve. This should be stated in the threat model and we should assess how critical is our application and how much we trust a potential third party to decide if it is meaningful to accept the overhead.
-
-\begin{itemize}
-    \item Comment on your findings, discuss different outcomes for each part.
-    \item Discuss outcomes from different circuits including your own circuit.
-    \item In your opinion, which model is appropriate to use under which conditions/threat model? Why? Discuss.
-    \item Come up with a scenario for each part of the implementation, discuss why it makes sense to use homomorphic encryption based generation of Beaver triplets.
-\end{itemize}
+This project and the way the two parts were compared illustrates a principle often told in class that privacy has its cost. At the end, we face the tradeoff between performance & efficiency and privacy & security. The performance overhead seems to grow exponentially comparing to the complexity of the system. In any setup, simple operations such as additions, additions by a constant or multiplication by a constant remain easy. It is a completely different story when its comes to slightly more complex operations such as multiplications. On one hand it is less trivial to implement it for the programmer even when one has access to cryptographic libraries such as Lattigo, there are still parameters to optimize otherwise the system can simply become unusable. On the other hand, the user also feels considerable side effects when using this kind of systems, especially the second one. It is not desirable for a user to drain its battery or burn its processor for such computation, in other words, the solution should not be worse than the initial problem. Considering our results, we would say that the technology is here and we know how to make use of it but it must fit the appropriate scenario. If there is a third party that we can trust according to the threat model, then considering the performance, we should use the system implemented in part 1. If we are in a more hostile scenario that does not allow to trust a third party then we should trust mathematics and implement the second system if we want to preserve privacy despite computation and communication overhead. This is particularly useful to ensure that a nasty trusted third party does not manipulate the Beaver triplets in order to change the final result according to what some adversary would like to achieve. This should be stated in the threat model and we should assess how critical our application is and how much we trust a potential third party to decide if it is meaningful to accept the overhead.
 
 \section{Conclusion}
-\begin{itemize}
-    \item Assess your learning outcomes for this project.
-    \item What did you do? What did you learn? Any interesting design ideas? 
-\end{itemize}
+This project is a good opportunity to have a first hands-on experience with the Go programming language and the Lattigo cryptographic library. It is enjoyable to work with modern tools offering a lot of packages that allow us to easily implement networks, tests and benchmarks.
+
+We implemented two MPC systems, one relying on a trusted third party and another one on homomorphic encryption. Then, we benchmarked and compared them. Finally, we discussed about each solutions and the corresponding tradeoffs. We are now able to see concretely how the threat model is central and take design decisions accordingly. Now that we implemented it once ourself, talking about tradeoffs and performance overhead make more sense since we were able to assess different scenarios and choose the appropriate solution 
 
 \end{document}
