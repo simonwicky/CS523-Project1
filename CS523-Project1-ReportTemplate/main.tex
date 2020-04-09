@@ -83,7 +83,10 @@ Furthermore, a third-party is trusted to generate the Beaver triplets, necessary
             \item The circuit is computed and the output is made available.
         \end{enumerate}
     \item The circuit added is inspired by the cosine theorem which states, for a triangle with sides $a$, $b$, and $c$ with angle $\gamma = \widehat{ab}$, that $a^2 + b^2 - 2ab\cos\gamma = c^2$. To adapt this formula to the available gates and requirements, the following function is computed : $f(a,b,c) = a^2 + b^2 - 2abc + K$. With random input $42$, $3$ and $5$, $f$ yields $448$ as a result. The details of the computation are as follows :
-        \includegraphics[scale=0.3]{main.png}
+      \begin{figure}[h]
+        \caption{Our own complex circuit}
+        \includegraphics[width=0.5\textwidth]{main.png}
+      \end{figure}
 \end{itemize}
 To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test.go:25} is set to true.
 
@@ -105,11 +108,21 @@ The implementation of this part is identical to the previous part, with the addi
 To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test.go:25} is set to false.
 \section{Evaluation}
 - Give a comprehensive comparison and evaluation about Part1 and Part2 of the project including performance results. Feel free to use charts, tables, plots...
+Our expectations about the two systems performance are the following :
 \begin{itemize}
     \item The addition, addition with a constant, subtraction and multiplication by a constant are gates which compute their respective output locally. A quick glance at the code is necessary to see that they take constant time. The reveal operation as well as the multiplication which uses the reveal operation have to use the network to compute their ouput. Hence they are inherently slower and are directly linked the performance of the circuits.
     %What affects the efficiency of the executions? Be specific, which types of operations/circuits are directly linked to performance?
-    \item The difference between Part 1 and Part 2 is the Beaver triplet generation. Part 1 generates them in one place, before the main protocol, acting like a trusted third-party. In Part 2, every party collaborates to generate the triplets. This leads to Part 1 being very efficient whereas Part 2 is order of magnitude slower, since beaver triplets generation requires homomorphic encryption and a lot of network traffic. %Is there any difference in terms of performance between Part I and Part II? Why? 
+    \item The difference between Part 1 and Part 2 is the Beaver triplet generation. Part 1 generates them in one place, before the main protocol, acting like a trusted third-party. In Part 2, every party collaborates to generate the triplets. This leads to Part 1 being very efficient whereas Part 2 is order of magnitude slower, since Beaver triplets generation requires homomorphic encryption and a lot of network traffic. %Is there any difference in terms of performance between Part I and Part II? Why? 
 \end{itemize}
+
+\begin{figure}[h]
+  \caption{Benchmarks on personal computers}
+  \label{fig:bench}
+  \includegraphics[width=0.5\textwidth]{Part_1_benchmark.png}
+  \includegraphics[width=0.5\textwidth]{Part_2_benchmark.png}
+\end{figure}
+
+We make use of the testing package provided by the Go programming language to perform benchmarks on our own personal computers. It helps the programmer to analyze its code performance by running it multiple times and outputting robust measurements in a reasonable amount of time. By doing this, our expectations seem to be fulfilled according to the bar charts on figure \ref{fig:bench}. We run the benchmarks on each computer for each part and circuits of the project. It features a logaritmic scale that helps visualizing the order of magnitude of overhead due to the kind of system we implement. First, notice that simple circuits which do not require multiplications, on both parts, have a similar complexity. Then, we can compare on each part, simple and complex circuits. Concerning part 1, the time required to execute complex circuits seems reasonable considering their increased complexity. We should keep in mind that the longer a circuit takes to execute the less number of times it will be run for the benchmark, it means that longer measurements are less reliable than the short ones. Nevertheless, the trend is similar on both computer. Finally, we can confirm our concerns about orders of magnitude of overhead related to part 2 when used for multiplications. The additional homomorphic encryption and network traffic have a huge price both in computation and communication. We also notice that part 2 require a lot more memory than available on our computers and it could, therefore, be a bottleneck as well.
 
 \section{Discussion}
 \begin{itemize}
