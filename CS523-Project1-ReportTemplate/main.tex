@@ -54,16 +54,16 @@ implementations, compare and evaluate them.
 \section{Part I}
 
 \subsection{Threat model}
-The asset to protect for a party is the input. During the protocl, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending the result.
+The asset to protect for a party is the input. During the protocol, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending the result.
 
 All parties follow the "honest but curious" threat model. They do not deviate from the protocol and compute the correct circuit, but try to infer informations about other's input.
 
-Furthermore, a third-party is trusted to generate the beaver triplets, necessary for the computation of multiplications.
+Furthermore, a third-party is trusted to generate the Beaver triplets, necessary for the computation of multiplications.
 
 %Give the corresponding threat model for the first part of the project that you implemented. 
 \subsection{Implementation details}
 \begin{itemize}
-    \item \textit{main.go} : This file is the entry point of the programm. It handles the creation of a party, the set up of the network, the circuit and launch the computation. The structure has been slightly adapted from the handout, to fit the changes made. Note that since each party runs independently, this file is unused in the first part, since the beaver triplets are generated in a single location.
+    \item \textit{main.go} : This file is the entry point of the programm. It handles the creation of a party, the set up of the network, the circuit and launch the computation. The structure has been slightly adapted from the handout, to fit the changes. Note that since each party runs independently, this file is unused in the first part, Beaver triplets are generated in a single location.
     \item \textit{helper.go} : This file contains two helper methods :
         \begin{itemize}
             \item Pmod(x,mod) : computes x modulo mod. This method is necessary because the \% operator can return negative results.
@@ -72,7 +72,7 @@ Furthermore, a third-party is trusted to generate the beaver triplets, necessary
     \item \textit{gates.go} : Implements the different gates needed for the circuits.
     \item \textit{circuits.go} : Contains two methods :
         \begin{itemize}
-            \item SetUpMPC(circuit, trusted) : Create the necessary structure for the protocol to run, and generate the beaver triplets depending on the chosen setting for \textit{trusted}. This setting is used for modularity between Part 1 and Part 2. During this set up, the circuit is also parsed to determine the number of beaver triplets to generate.
+            \item SetUpMPC(circuit, trusted) : Create the necessary structure for the protocol to run, and generate the Beaver triplets depending on the chosen setting for \textit{trusted}. This setting is used for modularity between Part 1 and Part 2. During this set up, the circuit is also parsed to determine the number of Beaver triplets to generate.
             \item ComputeCircuit() : Uses the gates from \textit{gates.go} to actually performs the computation, and return the result.
         \end{itemize}
     \item \textit{mpc.go} : This file is the heart of the protocol. Each party is represented as a MPCProtocol and contains an array of MPCRemote to abstract the other parties. The communication are performed with MPCMessage, containing various field needed. The \textit{Run(trusted)} method works as follows :
@@ -93,7 +93,7 @@ The asset to protect for a party is the input. During the protocl, anyone monito
 
 All parties follow the "honest but curious" threat model. They do not deviate from the protocol and compute the correct circuit, but try to infer informations about other's input.
 
-In this part, no trusted third-party exist. The parties generates the beaver triplets using homomorphic encryption.
+In this part, no trusted third-party exists. The parties generate the Beaver triplets using homomorphic encryption.
 \subsection{Implementation details}
 The implementation of this part is identical to the previous part, with the addition of the \textit{beaver.go} file which is used to augment the protocol as follows. : 
 \begin{itemize}
@@ -106,9 +106,9 @@ To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test
 \section{Evaluation}
 - Give a comprehensive comparison and evaluation about Part1 and Part2 of the project including performance results. Feel free to use charts, tables, plots...
 \begin{itemize}
-    \item The addition, addition with a constant, subtraction and multiplication by a constant are gates which compute their respective output locally. A quick glance at the code is necessary to see that they take constant time. The reveal operation as welle as the multiplication (which uses the reveal operation) have to use the network to compute their ouput. Hence they are inherently slower and are directly linked the performance of the circuits.
+    \item The addition, addition with a constant, subtraction and multiplication by a constant are gates which compute their respective output locally. A quick glance at the code is necessary to see that they take constant time. The reveal operation as well as the multiplication which uses the reveal operation have to use the network to compute their ouput. Hence they are inherently slower and are directly linked the performance of the circuits.
     %What affects the efficiency of the executions? Be specific, which types of operations/circuits are directly linked to performance?
-    \item The difference between Part1 and Part2 is the beaver triplet generation. Part 1 generate them in one place, before the main protocol, acting like a trusted third-party. In Part 2, every party collaborate to generate the triplets. This leads to Part 1 being very efficient whereas Part 2 is order of magnitude slower, since beaver triplets generation requires homomorphic encryption and a lot of network traffic. %Is there any difference in terms of performance between Part I and Part II? Why? 
+    \item The difference between Part 1 and Part 2 is the Beaver triplet generation. Part 1 generates them in one place, before the main protocol, acting like a trusted third-party. In Part 2, every party collaborates to generate the triplets. This leads to Part 1 being very efficient whereas Part 2 is order of magnitude slower, since beaver triplets generation requires homomorphic encryption and a lot of network traffic. %Is there any difference in terms of performance between Part I and Part II? Why? 
 \end{itemize}
 
 \section{Discussion}
