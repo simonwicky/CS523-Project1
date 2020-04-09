@@ -58,6 +58,8 @@ The asset to protect for a party is the input. During the protocol, anyone monit
 
 All parties follow the "honest but curious" threat model. They do not deviate from the protocol and compute the correct circuit, but try to infer informations about other's input.
 
+At the end of the computation, each party get the correct result of the circuit for the provided input.
+
 Furthermore, a third-party is trusted to generate the Beaver triplets, necessary for the computation of multiplications.
 
 %Give the corresponding threat model for the first part of the project that you implemented. 
@@ -73,7 +75,12 @@ Furthermore, a third-party is trusted to generate the Beaver triplets, necessary
     \item \textit{circuits.go} : Contains two methods :
         \begin{itemize}
             \item SetUpMPC(circuit, trusted) : Create the necessary structure for the protocol to run, and generate the Beaver triplets depending on the chosen setting for \textit{trusted}. This setting is used for modularity between Part 1 and Part 2. During this set up, the circuit is also parsed to determine the number of Beaver triplets to generate.
-            \item ComputeCircuit() : Uses the gates from \textit{gates.go} to actually performs the computation, and return the result.
+            \item ComputeCircuit() : Uses the gates from \textit{gates.go} to actually performs the computation, and return the result. The circuit must follow this structures :
+            \begin{itemize}
+                \item Only one reveal gate is present, and it should be at the end.
+                \item The number of secrets must be equal to the number of inputs.
+                \item The output Wire ID must be sequential increasing numbers.
+            \end{itemize}
         \end{itemize}
     \item \textit{mpc.go} : This file is the heart of the protocol. Each party is represented as a MPCProtocol and contains an array of MPCRemote to abstract the other parties. The communication are performed with MPCMessage, containing various field needed. The \textit{Run(trusted)} method works as follows :
         \begin{enumerate}
@@ -82,9 +89,11 @@ Furthermore, a third-party is trusted to generate the Beaver triplets, necessary
             \item The shares are collected.
             \item The circuit is computed and the output is made available.
         \end{enumerate}
-    \item The circuit added is inspired by the cosine theorem which states, for a triangle with sides $a$, $b$, and $c$ with angle $\gamma = \widehat{ab}$, that $a^2 + b^2 - 2ab\cos\gamma = c^2$. To adapt this formula to the available gates and requirements, the following function is computed : $f(a,b,c) = a^2 + b^2 - 2abc + K$. With random input $42$, $3$ and $5$, $f$ yields $448$ as a result. The details of the computation are as follows :
-        \includegraphics[scale=0.3]{main.png}
+    \item The circuit added is inspired by the cosine theorem which states, for a triangle with sides $a$, $b$, and $c$ with angle $\gamma = \widehat{ab}$, that $a^2 + b^2 - 2ab\cos\gamma = c^2$. To adapt this formula to the available gates and requirements, the following function is computed : $f(a,b,c) = a^2 + b^2 - 2abc + K$. With random input $42$, $3$ and $5$, $f$ yields $448$ as a result. The details of the circuit is as follows :
 \end{itemize}
+\begin{center}
+        \includegraphics[scale=0.3]{main.png}
+\end{center}
 To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test.go:25} is set to true.
 
 \section{Part II}
@@ -92,6 +101,8 @@ To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test
 The asset to protect for a party is the input. During the protocl, anyone monitoring the communication should not be able to recover the input of a given party. In particular, a party taking part in the computation can not infer more information about another party's input that what he could have infered if all data had been sent to a trusted third-party making the computation for them and sending the result.
 
 All parties follow the "honest but curious" threat model. They do not deviate from the protocol and compute the correct circuit, but try to infer informations about other's input.
+
+At the end of the computation, each party get the correct result of the circuit for the provided input.
 
 In this part, no trusted third-party exists. The parties generate the Beaver triplets using homomorphic encryption.
 \subsection{Implementation details}
