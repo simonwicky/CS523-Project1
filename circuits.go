@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"sync"
 )
@@ -40,7 +39,7 @@ func SetUpMPC(circuit *TestCircuit, trusted bool) (mpcProtocol []*MPCProtocol, w
 	}
 
 	network := GetTestingTCPNetwork(P)
-	fmt.Println("parties connected")
+	//fmt.Println("parties connected")
 
 	for i, Pi := range mpcProtocol {
 		Pi.Bp.BindNetwork(network[i])

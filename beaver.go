@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math"
 	"net"
 
@@ -99,7 +98,7 @@ func (bp *BeaverProtocol) BindNetwork(nw *TCPNetworkStruct) {
 
 func (bp *BeaverProtocol) Run() [][3]uint64 {
 	//here the protocol is actually run
-	fmt.Println("Protocol beaver is running for", bp.Nb_triplet, "triplets")
+	//fmt.Println("Protocol beaver is running for", bp.Nb_triplet, "triplets")
 	if bp.Nb_triplet == 0 {
 		return nil
 	}

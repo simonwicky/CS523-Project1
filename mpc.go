@@ -130,12 +130,12 @@ func (cep *MPCProtocol) BindNetwork(nw *TCPNetworkStruct) {
 }
 
 func (cep *MPCProtocol) Run(trusted bool) {
-	fmt.Println(cep, "is running")
+	//fmt.Println(cep, "is running")
 
 	//beaverPart
 	if !trusted {
 		cep.Triplets = cep.Bp.Run()
-		fmt.Println(cep, "Protocol beaver has terminated")
+		//fmt.Println(cep, "Protocol beaver has terminated")
 	}
 
 	//create secret shares and send them
@@ -150,7 +150,7 @@ func (cep *MPCProtocol) Run(trusted bool) {
 	//collect shares from other peers
 	received := 0
 	for m := range cep.Chan {
-		fmt.Println(cep, "received message from", m.Party, ":", m.Value)
+		//fmt.Println(cep, "received message from", m.Party, ":", m.Value)
 		if m.Id0 == 0 {
 			cep.Secret[m.Party] = m.Value
 			received++
