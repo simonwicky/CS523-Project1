@@ -60,7 +60,7 @@ func BenchmarkEval(b *testing.B) {
 	}
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
-			trusted := false
+			trusted := true
 			circuit := TestCircuits[tc.index]
 			mpcP, wg := SetUpMPC(circuit, trusted)
 			for i := 0; i < b.N; i++ {
