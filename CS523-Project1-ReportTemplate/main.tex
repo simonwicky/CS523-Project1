@@ -83,7 +83,7 @@ Furthermore, a third-party is trusted to generate the Beaver triplets, necessary
             \item The shares are collected.
             \item The circuit is computed and the output is made available.
         \end{enumerate}
-      \item The circuit added is inspired by the cosine theorem which states, for a triangle with sides $a$, $b$, and $c$ with angle $\gamma = \widehat{ab}$, that $a^2 + b^2 - 2ab\cos\gamma = c^2$. To adapt this formula to the available gates and requirements, the following function is computed : $f(a,b,c) = a^2 + b^2 - 2abc + K$. With random input $42$, $3$ and $5$, $f$ yields $448$ as a result. The details of the computation are as in figure \ref{fig:circ}. To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test.go:25} is set to true.
+      \item The circuit added is inspired by the cosine theorem which states, for a triangle with sides $a$, $b$, and $c$ with angle $\gamma = \widehat{ab}$, that $a^2 + b^2 - 2ab\cos\gamma = c^2$. To adapt this formula to the available gates and requirements, the following function is computed : $f(a,b,c) = a^2 + b^2 - 2abc + K$. With random input $42$, $3$ and $5$, $f$ yields $448$ as a result. The details of the computation are as in figure \ref{fig:circ}. To run tests for this part, make sure that \textit{trusted} in \textit{mpc\_test.go:28} is set to true.
 \begin{figure}[h]
   \caption{Our own complex circuit}
   \label{fig:circ}
