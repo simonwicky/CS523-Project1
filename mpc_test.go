@@ -5,6 +5,8 @@ import (
 	"testing"
 )
 
+//Part 1 is run by setting the trusted variable to true
+//Part 2 is run by setting the trusted variable to false
 func TestEval(t *testing.T) {
 	testCases := []struct {
 		name  string
@@ -22,6 +24,7 @@ func TestEval(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			//set trusted here
 			trusted := true
 			circuit := TestCircuits[tc.index]
 			mpcP, wg := SetUpMPC(circuit, trusted)
@@ -43,6 +46,8 @@ func TestEval(t *testing.T) {
 	}
 }
 
+//Part 1 is run by setting the trusted variable to true
+//Part 2 is run by setting the trusted variable to false
 func BenchmarkEval(b *testing.B) {
 	testCases := []struct {
 		name  string
@@ -60,6 +65,7 @@ func BenchmarkEval(b *testing.B) {
 	}
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
+			//set trusted here
 			trusted := true
 			circuit := TestCircuits[tc.index]
 			mpcP, wg := SetUpMPC(circuit, trusted)

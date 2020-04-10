@@ -12,7 +12,7 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) < 2 {
-		fmt.Println("Usage:", prog, "[Party ID] [Input]")
+		fmt.Println("Usage:", prog, "[Party ID] [Input] [Circuit]")
 		os.Exit(1)
 	}
 

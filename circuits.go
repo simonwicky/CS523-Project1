@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+//create the local party, the waitGroup, and all MPCProtocols needed for the tests
 func SetUpMPC(circuit *TestCircuit, trusted bool) (mpcProtocol []*MPCProtocol, wg *sync.WaitGroup) {
 
 	N := uint64(len(circuit.Peers))

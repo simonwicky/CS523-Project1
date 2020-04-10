@@ -50,6 +50,7 @@ func Mult_Gate(x, y uint64, gateID uint64, triplet [3]uint64, cep *MPCProtocol) 
 	return Add_Gate(half1, half2)
 }
 
+//reveal gate with ID, used in multiplication
 func reveal_gate(cep *MPCProtocol, value uint64, id [2]uint64) (output uint64) {
 	output = value
 	for _, peer := range cep.Peers {
@@ -73,6 +74,7 @@ func reveal_gate(cep *MPCProtocol, value uint64, id [2]uint64) (output uint64) {
 	return
 }
 
+//reveal gate whithout ID, used for the actual reveal gate
 func Reveal_Gate(cep *MPCProtocol, value uint64, gateID uint64) uint64 {
 	return reveal_gate(cep, value, [2]uint64{gateID, 0})
 }

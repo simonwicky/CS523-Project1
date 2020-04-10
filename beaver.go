@@ -9,7 +9,7 @@ import (
 	"github.com/ldsec/lattigo/ring"
 )
 
-//legacy code
+//Beaver Triplet Generation for part 1
 func generateBeaverTriplet(n int, mpcProtocol []*MPCProtocol) {
 	for i := 0; i < n; i++ {
 		a := ring.RandUniform(uint64(MODULUS), 0xffff)
